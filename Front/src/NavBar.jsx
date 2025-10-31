@@ -25,6 +25,10 @@ function NavBar() {
           <a href="#">ESCENARIOS DISPONIBLES</a>
           <a href="#">QUEJAS Y SUGERENCIAS</a>
         </nav>
+
+        <div>
+          <button>Inciar sesion</button>
+        </div>
       </div>
     </header>
   );

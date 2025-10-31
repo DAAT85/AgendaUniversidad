@@ -8,6 +8,8 @@ const PORT = 3000;
 app.use(cors);
 app.use(express.json());
 
+//Rutas a usar
+
 app.listen(PORT, (req, res)=>{
     console.log(`Servidor funcionando en http://localhost:${PORT}`);
 });
