@@ -1,0 +1,23 @@
+//?Cada cambio que hagas, usa este comando
+//npx prisma migrate dev --name cambio
+//Aqui se generan las tablas o models, para la base de datos
+generator client {
+  provider = "prisma-client.js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  name        String
+  email       String   @unique
+  password    String
+  dependence  String
+  createdAt   DateTime @default(now())
+}
+
+
