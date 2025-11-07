@@ -1,11 +1,15 @@
 import React from "react";
 import './styles/Home.css'
 import FilterIcon from './assets/Filter.svg';
-
+// Se importa la función que se definió en ListaEventos.jsx
+import ListaEventos from "./ListaEventos.jsx";
+import NavBar from "./NavBar.jsx";
+import Footer from "./Footer.jsx";
 
 function Home(){
     return(
     <>
+        <NavBar />
         <header>
             <div className="container bg-light p-5 mt-4 rounded shadow-sm text-center" style={{ maxWidth: '600px' }}>
                 <h1 className="text-success fw-bold mb-4">Calendarios de Eventos</h1>
@@ -43,8 +47,10 @@ function Home(){
             
             
         <main>
-
+            <ListaEventos /> 
         </main>
+        
+        <Footer />
     </>
     );
 }

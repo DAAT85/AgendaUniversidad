@@ -1,65 +1,86 @@
-
-.navbar {
-  background-color: #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  padding: 10px 0;
-  font-family: Arial, sans-serif;
+.navbar-custom {
+    background-color: white;
+    width: 100%;
 }
 
 .navbar-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-
 .navbar-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+    display: flex;
+    align-items: center;
 }
 
 .navbar-logo {
-  height: 40px;
+    height: 50px;
+    margin-right: 10px;
 }
 
-.navbar-text h1 {
-  font-size: 18px;
-  font-weight: bold;
-  color: #222;
-  margin: 0;
+.navbar-text {
+    line-height: 1.2;
 }
 
-.navbar-text p {
-  font-size: 13px;
-  color: #666;
-  margin: 0;
+.navbar-title {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
 }
 
+.navbar-subtitle {
+    font-size: 0.8rem;
+    color: #28a745;
+    margin: 0;
+}
 
 .navbar-menu {
-  display: flex;
-  gap: 25px;
+    display: flex;
 }
 
-.navbar-menu a {
-  text-decoration: none;
-  color: #444;
-  font-weight: 500;
-  font-size: 14px;
-  border-bottom: 2px solid transparent;
-  padding-bottom: 4px;
-  transition: color 0.2s, border-color 0.2s;
+.nav-link {
+    text-decoration: none;
+    color: #555;
+    padding: 10px 15px;
+    margin-right: 20px;
+    font-weight: 500;
+    transition: color 0.2s;
 }
 
-.navbar-menu a:hover {
-  color: #009245; 
+.navbar-menu .nav-link:last-child {
+    margin-right: 0;
 }
 
-.navbar-menu a.active {
-  color: #009245;
-  border-bottom: 2px solid #009245;
+.active-link {
+    color: #28a745;
+    border-bottom: 3px solid #28a745;
+    font-weight: bold;
+}
+
+.navbar-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.navbar-btn:hover {
+    background-color: #1e7e34;
+}
+
+.navbar-divider {
+    border: 0;
+    height: 1px;
+    background-color: #eee;
+    margin: 0;
+    padding: 0;
 }

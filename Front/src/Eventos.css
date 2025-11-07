@@ -1,0 +1,110 @@
+.contenedor-pagina {
+    padding: 0px 20px 40px 20px; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.lista-eventos-container {
+    width: 100%;
+    max-width: 800px;
+    margin-top: 20px;
+}
+
+.evento-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    margin-bottom: 15px;
+    background-color: #B35836;
+    border: 1px solid #94452a;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.3s, transform 0.2s;
+    color: white; 
+}
+
+.evento-item:hover {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    transform: translateY(-2px);
+}
+
+.evento-fecha-hora {
+    min-width: 100px;
+    text-align: center;
+    padding-right: 20px;
+    border-right: 1px solid rgba(255, 255, 255, 0.5); 
+}
+
+.evento-fecha {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #fafbfb; 
+    margin: 0;
+}
+
+.evento-hora {
+    font-size: 0.9rem;
+    color: #eee;
+    margin: 0;
+}
+
+.evento-info {
+    flex-grow: 1;
+    padding: 0 30px;
+}
+
+.evento-nombre {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+    margin: 0 0 5px 0;
+}
+
+.evento-descripcion {
+    font-size: 1rem;
+    color: #eee;
+    margin: 0;
+}
+
+.evento-registro {
+    min-width: 130px;
+}
+
+.btn-registro {
+    background-color: #1E5128; 
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background-color 0.2s;
+}
+
+.btn-registro:hover {
+    background-color: #143d1a; 
+}
+
+@media (max-width: 600px) {
+    .evento-item {
+        flex-direction: column; 
+        align-items: flex-start;
+        padding: 15px;
+    }
+
+    .evento-fecha-hora {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+        width: 100%;
+        text-align: left;
+    }
+    
+    .evento-info {
+        padding: 0 0 15px 0;
+    }
+}
