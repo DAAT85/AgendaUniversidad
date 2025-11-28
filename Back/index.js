@@ -1,16 +1,16 @@
 import express from 'express';
 import cors from 'cors';
-import { PrismaClient } from '@prisma/client';
-import router from './routes/route';
+import router from './routes/route.js';
+
 
 
 const app = express();
 const PORT = 3000;
-const prisma = new PrismaClient();
+
 app.use(cors());
 app.use(express.json());
 
-//?Aqui estan todas las rutas, FALTA IMPORTARLAS
+//?Aqui estan todas las rutas
 app.use('/api', router);
 
 app.listen(PORT, (req, res)=>{
