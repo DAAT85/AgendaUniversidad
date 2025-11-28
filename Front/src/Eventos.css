@@ -20,7 +20,7 @@
     background-color: #B35836;
     border: 1px solid #94452a;
     border-radius: 16px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 15px #53A600(0, 0, 0, 0.15);
     transition: box-shadow 0.3s, transform 0.2s;
     color: white; 
 }
@@ -73,7 +73,7 @@
 }
 
 .btn-registro {
-    background-color: #1E5128; 
+    background-color: #53A600; 
     color: white;
     border: none;
     padding: 10px 20px;
@@ -85,7 +85,7 @@
 }
 
 .btn-registro:hover {
-    background-color: #143d1a; 
+    background-color: #53A600; 
 }
 
 @media (max-width: 600px) {

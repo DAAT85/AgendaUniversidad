@@ -1,0 +1,101 @@
+.calendario-container {
+  width: 520px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 2px solid #dcdcdc;
+  border-radius: 12px;
+  text-align: center;
+  background: white;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+}
+
+.controles {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.controles button {
+  background: #28a745;
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.titulo {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.vistas-btns button {
+  margin: 4px;
+  background: #28a745;
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+.mes-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.header-dia {
+  font-weight: bold;
+  color: #555;
+}
+
+.dia {
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.dia:hover {
+  background: #e0e7ff;
+}
+
+.vacio {
+  background: transparent;
+}
+
+.vista-dia {
+  margin-top: 20px;
+}
+
+.semana-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.dia-semana {
+  background: #f3f4f6;
+  padding: 14px;
+  border-radius: 8px;
+}
+
+.ano-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.mes-cuadro {
+  background: #f5f5f5;
+  padding: 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+.mes-cuadro:hover {
+  background: #e0e7ff;
+}

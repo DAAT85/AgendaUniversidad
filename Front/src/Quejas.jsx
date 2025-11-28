@@ -42,7 +42,7 @@ function Quejas() {
 
   return (
     <>
-    <NavBar />
+    
     <div className="quejas-container">
       <div className="quejas-card">
         <h2 className="quejas-title" style={{ color: '#53A600' }}>Quejas y Sugerencias</h2>

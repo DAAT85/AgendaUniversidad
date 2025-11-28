@@ -128,7 +128,7 @@ function NavBar() {
         </div>
 
         <nav className="navbar-menu">
-          <Link to="#" className="nav-link"> CALENDARIO </Link>
+          <Link to="/Calendario" className="nav-link"> CALENDARIO </Link>
           <Link to="/Quejas" className="nav-link"> QUEJAS Y SUGERENCIAS </Link>   
         </nav>
 

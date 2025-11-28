@@ -9,11 +9,11 @@ import Footer from "./Footer.jsx";
 function Home(){
     return(
     <>
-        <NavBar />
         <header>
             <div className="container bg-light p-5 mt-4 rounded shadow-sm text-center" style={{ maxWidth: '600px' }}>
-                <h1 className="text-success fw-bold mb-4">Calendarios de Eventos</h1>
-                <h4 className="text-success mb-3">Seleccione escenario educativo a consultar</h4>
+                
+
+                <h4 className="text-success mb-3" >Seleccione escenario educativo a consultar</h4>
 
                 {/* Contenedor con icono */}
                 <div className="position-relative d-inline-block w-75 mx-auto">
