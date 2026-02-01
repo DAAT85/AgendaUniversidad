@@ -1,9 +1,9 @@
 //?Cada cambio que hagas, usa este comando
 //npx prisma migrate dev --name cambio
 //Aqui se generan las tablas o models, para la base de datos
+//TODO npx prisma studio esto es para ver la base de datos 
 generator client {
-  provider = "prisma-client.js"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -11,13 +11,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+
 model User {
   id          Int      @id @default(autoincrement())
   name        String
   email       String   @unique
   password    String
   dependence  String
+  role        Role     @default(STUDENT)
   createdAt   DateTime @default(now())
 }
 
-
+//Modelo de los eventos a guardar
+model Events {
+  id          Int      @id @default(autoincrement())
+  name        String 
+  state       String    //Solicitado, Rechazado y Autorizado
+  type        String   //Examen, taller, Curso
+  createdAt   DateTime @default(now())
+}

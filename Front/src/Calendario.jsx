@@ -44,7 +44,7 @@ export default function Calendario() {
     });
   })();
 
-  // 👉 MODIFICADO: aceptar fecha completa desde semana
+  //  MODIFICADO: aceptar fecha completa desde semana
   const abrirDia = (fecha) => {
     if (fecha instanceof Date) {
       setFechaActual(fecha);

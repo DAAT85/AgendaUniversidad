@@ -29,27 +29,36 @@ router.post('/register', async (req, res)=>{
     }
 });
 
-router.post('/login', async (req, res)=>{
-    try{
-        const {email, password} = req.body;
-        if(!email || !password){
-            return res.status(404).json({ error: 'Email y contraseña son requeridos'});
+
+//Ya con los roles
+router.post('/login', async (req, res) => {
+    try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email y contraseña son requeridos' });
+    }
+
+    const user = await prisma.user.findUnique({
+        where: { email }
+    });
+
+    if (!user || user.password !== password) {
+        return res.status(401).json({ error: 'Datos incorrectos' });
+    }
+
+    res.status(200).json({
+        message: 'Inicio de sesión correcto',
+        user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role
         }
+    });
 
-
-        //Es para traer solo uno, a comparacion de findMany()
-        const student = await prisma.student.findUnique({
-            where: { email: email }
-        });
-
-        //Verificacion si existe
-        if(!student || student.password !== password){
-            return res.status(401).json({ error: 'Datos incorrectos' })
-        }
-
-        res.status(200).json({message: 'Se inicio sesion correctamente', student});
-    }catch(error){
-        res.status(404).json({error: "Usuario no encontrado"});
+    } catch (error) {
+        res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
 
