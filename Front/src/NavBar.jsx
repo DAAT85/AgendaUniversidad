@@ -2,61 +2,85 @@ import React from "react";
 import "./NavBar.css";
 import Swal from 'sweetalert2';
 import { Link } from "react-router-dom";
+import { useState } from "react"; //Para el boton de inico de sesion
 
 function NavBar() {
+  //Para el cambio de estilo de boton y que cambie a "Cerrar sesion"
+  const [activo, setActivo] = useState(false);
+
   const openModal = () => {
-  Swal.fire({
-    title: 'Selecciona tu identidad',
-    html: `
-      <style>
-        #btn-registrer {
-          padding: 8px 16px;
-          background-color: transparent;
-          color: #53A600;
-          border: none;
-          border-bottom: 2px solid transparent;
-          font-size: 16px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.3s ease;
-        }
+  if (activo) {
+    // Si ya inició sesión, pregunta si quiere cerrar
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Quieres cerrar sesión?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, cerrar sesión',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setActivo(false); // Cierra sesión
+        Swal.fire('Sesión cerrada', '', 'success');
+      }
+    });
+  } else {
+    // Si no ha iniciado sesión, abre el modal de login
+    Swal.fire({
+      title: 'Selecciona tu identidad',
+      html: `
+        <style>
+          #btn-registrer {
+            padding: 8px 16px;
+            background-color: transparent;
+            color: #53A600;
+            border: none;
+            border-bottom: 2px solid transparent;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+          }
 
-        #btn-registrer:hover {
-          border-bottom: 2px solid #53A600;
-          color: #458a00;
-        }
-      </style>
-      <div class="d-grid gap-3">
-        <button id="btn-admin" class="btn btn-success">Administrador</button>
-        <button id="btn-estudiante" class="btn btn-success">Estudiante</button>
-        <p>¿No te has registrado? <button id="btn-registrer" class="text-primary text-decoration-underline">Click aqui</button></p>
-      </div>
-    `,
-    showConfirmButton: false,
-    didOpen: () => {
-      const btnAdmin = document.getElementById('btn-admin');
-      const btnEstudiante = document.getElementById('btn-estudiante');
-      const btnRegistrer = document.getElementById('btn-registrer');
+          #btn-registrer:hover {
+            border-bottom: 2px solid #53A600;
+            color: #458a00;
+          }
+        </style>
+        <div class="d-grid gap-3">
+          <button id="btn-admin" class="btn btn-success">Administrador</button>
+          <button id="btn-estudiante" class="btn btn-success">Estudiante</button>
+          <p>¿No te has registrado? <button id="btn-registrer" class="text-primary text-decoration-underline">Click aqui</button></p>
+        </div>
+      `,
+      showConfirmButton: false,
+      didOpen: () => {
+        const btnAdmin = document.getElementById('btn-admin');
+        const btnEstudiante = document.getElementById('btn-estudiante');
+        const btnRegistrer = document.getElementById('btn-registrer');
 
-      // Modal para Administrador
-      btnAdmin.addEventListener('click', () => {
-        openLoginModal('Administrador', 'admin');
-      });
+        // Modal para Administrador
+        btnAdmin.addEventListener('click', () => {
+          openLoginModal('Administrador', 'admin');
+        });
 
-      // Modal para Estudiante
-      btnEstudiante.addEventListener('click', () => {
-        openLoginModal('Estudiante', 'student');
-      });
+        // Modal para Estudiante
+        btnEstudiante.addEventListener('click', () => {
+          openLoginModal('Estudiante', 'student');
+        });
 
-      //Modal para registrarse
-      btnRegistrer.addEventListener('click', () =>{
-        openRegistrerModal('Estudiante', 'student')
-      })
-    }
-  });
+        //Modal para registrarse
+        btnRegistrer.addEventListener('click', () =>{
+          openRegistrerModal('Estudiante', 'student')
+        })
+      }
+    });
+  }
 };
 
-const openRegistrerModal = (userType, endpoint) => {
+const openRegistrerModal = (userType) => {
   Swal.fire({
     title: `Registro - ${userType}`,
     html: `
@@ -244,12 +268,12 @@ const openRegistrerModal = (userType, endpoint) => {
 
       btnRegister.addEventListener('click', async () => {
         const name = document.getElementById('swal-input-name').value;
-        const dependencia = document.getElementById('swal-input-dependencia').value;
+        const dependence = document.getElementById('swal-input-dependencia').value;
         const email = document.getElementById('swal-input-email').value;
         const password = document.getElementById('swal-input-password').value;
 
         // Validar campos vacíos
-        if (!name || !dependencia || !email || !password) {
+        if (!name || !dependence || !email || !password) {
           Swal.showValidationMessage('Por favor completa todos los campos');
           return;
         }
@@ -265,7 +289,7 @@ const openRegistrerModal = (userType, endpoint) => {
             },
             body: JSON.stringify({ 
               name, 
-              dependencia, 
+              dependence,
               email, 
               password 
             })
@@ -305,7 +329,7 @@ const openRegistrerModal = (userType, endpoint) => {
   });
 };
 
-const openLoginModal = (userType, endpoint) => {
+const openLoginModal = (userType) => {
   Swal.fire({
     title: `Inicio de Sesión - ${userType}`,
     html: `
@@ -350,7 +374,7 @@ const openLoginModal = (userType, endpoint) => {
           // Mostrar loading
           Swal.showLoading();
 
-          const response = await fetch(`http://localhost:3000/api/login/${endpoint}`, {
+          const response = await fetch(`http://localhost:3000/api/login`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -365,9 +389,10 @@ const openLoginModal = (userType, endpoint) => {
             Swal.fire({
               icon: 'success',
               title: '¡Bienvenido!',
-              text: `Hola ${result.student?.name || result.admin?.name || result.name}`,
+              text: `Hola ${result.user?.name || result.admin?.name || result.name}`,
               confirmButtonColor: '#53A600'
             });
+            setActivo(true);
           } else {
             // Error de credenciales
             Swal.fire({
@@ -416,7 +441,16 @@ const openLoginModal = (userType, endpoint) => {
         </nav>
 
         <div className="navbar-right">
-          <button onClick={openModal} className="navbar-btn">Ingresar</button>
+        {/*Hecha el ojo aqui para cambiar el boton de estado, o sea UseState-------------------------------------------------- */}
+          <button 
+            onClick={openModal} 
+            className="navbar-btn"
+            style={{
+              backgroundColor: activo ? 'red' : 'green',
+            }}
+          >
+            {activo ? 'Cerrar sesión' : 'Ingresar'}
+          </button>
         </div>
         
       </div>

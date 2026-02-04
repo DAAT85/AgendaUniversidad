@@ -3,6 +3,9 @@
   "scripts": {
     "dev": "nodemon server.js"
   },
+  "prisma": {
+    "seed": "node prisma/seed.mjs"
+  },
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "cors": "^2.8.5",

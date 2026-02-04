@@ -17,14 +17,15 @@ router.post('/register', async (req, res)=>{
             return res.status(400).json({ error: "Faltan campos requeridos" });
         }
 
-        const student = await prisma.student.create({
+        const user = await prisma.user.create({
             data: {name, email, password, dependence}
         });
 
         // 201 = creado correctamente
-        res.status(201).json(student); 
+        res.status(201).json(user); 
     }catch(error){
         //Error en caso de algo
+        console.log(error)
         res.status(500).json({ error: "Error al registrar el estudiante" });
     }
 });
