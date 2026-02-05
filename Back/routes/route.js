@@ -1,10 +1,12 @@
 import { PrismaClient } from "@prisma/client";
+import e, { json } from "express";
 import express from "express";
 
-
+//Se da de alta los metodos a usar
 const prisma = new PrismaClient();
 const router = express.Router();
-//Rutas
+
+//*Rutas
 
 //?Ruta de log in
 
@@ -48,7 +50,7 @@ router.post('/login', async (req, res) => {
         return res.status(401).json({ error: 'Datos incorrectos' });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
         message: 'Inicio de sesión correcto',
         user: {
             id: user.id,
@@ -59,25 +61,106 @@ router.post('/login', async (req, res) => {
     });
 
     } catch (error) {
-        res.status(500).json({ error: 'Error interno del servidor' });
+        return res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
 
 //? Rutas de administrador
 
-router.post('/createEvent', async(req, res)=>{
+//*Se crea un evento
+
+//!Falta probar todas las rutas en thunderclient
+
+router.post('/events', async(req, res)=>{
     try{
+        //Se busca en el body los parametros
         const [name, date, time, description] = req.body;
-        //Validacion
+        //Validaciones si faltan campos
         if(!name || !date || !time || !description){
             console.log("Faltan parametros");
-            res.status(404).json({message: "Faltan parametros"})
+            return res.status(404).json({message: "Faltan parametros"})
         }
+
+        //Aqui se crea el evento en la ruta
+        const event = await prisma.events.create({
+            data: {name, date, time, description}
+        });
+
+        //Se entrega el resultado
+        res.status(200).json({
+            message: "Se creó el evento",
+            event: event
+        });
+
     }catch(error){
         //Borrar el console.log cuando ya funcione bien para ahorrar memoria
         console.log(error);
-        res.status(500).json({error: 'Error al crear el evento'});
+        return res.status(500).json({error: 'Error al crear el evento'});
     }
 })
+
+//*Se obtiene los eventos
+router.get('/events', async(req, res)=>{
+    try{
+        //Devuelve todos los eventos
+        const events = await prisma.events.findMany({
+            orderBy: {
+                createdAt: 'desc' // los más recientes primero
+            }
+        });
+
+        //Resultado final
+        return res.status(200).json({
+            message: "Eventos encontrados",
+            events: events
+        });
+
+    }catch(error){
+        //Borrar cuando ya este listo para ahorrar memomira
+        console.log(error);
+        return res.status(500).json({error: 'No se pudo encontrar el evento'})
+    }
+});
+
+//*Se elimina un evento
+router.delete('/events/:id', async(req, res)=>{
+    try{
+        //Se busca por id, se usa req.params cuando se usa una especificacion, por ser un parametro
+        const {id} = req.params;
+
+        //Validacion en caso de no haber proporcionado
+        if(!id){
+            console.log(`No se proporciono un ID`);
+            return res.status(404).json({message: `No se proporciono un ID`});
+        }
+        
+        //Se busca el evento 
+        const event = await prisma.events.findUnique({
+            where: {id: parseInt(id)}
+        })
+    
+
+        //Valida si existe
+        if(!event){
+            return res.status(404).json({message: `No se encontro un ID ${id}`})
+
+        }
+
+        //Se entrega elimina llamando a la tabla y que metodo usar
+        await prisma.events.delete({
+            where: {id: parseInt(id)}
+        })
+
+
+        //Se entrega el resultado final
+        return res.status(200).json({
+            message: "Evento eliminado exitosamente",
+            event: event // Se devuelve el evento eliminado
+        });
+    }catch(error){
+        console.log(error);
+        return res.status(500).json({ error: "Error al eliminar el evento"});
+    }
+});
 
 export default router;

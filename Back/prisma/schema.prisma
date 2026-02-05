@@ -31,6 +31,9 @@ model User {
 model Events {
   id          Int      @id @default(autoincrement())
   name        String 
+  date        String
+  time        String
+  description String
   state       String    //Solicitado, Rechazado y Autorizado
   type        String   //Examen, taller, Curso
   createdAt   DateTime @default(now())
