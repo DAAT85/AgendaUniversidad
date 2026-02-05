@@ -63,6 +63,21 @@ router.post('/login', async (req, res) => {
     }
 });
 
+//? Rutas de administrador
 
+router.post('/createEvent', async(req, res)=>{
+    try{
+        const [name, date, time, description] = req.body;
+        //Validacion
+        if(!name || !date || !time || !description){
+            console.log("Faltan parametros");
+            res.status(404).json({message: "Faltan parametros"})
+        }
+    }catch(error){
+        //Borrar el console.log cuando ya funcione bien para ahorrar memoria
+        console.log(error);
+        res.status(500).json({error: 'Error al crear el evento'});
+    }
+})
 
 export default router;
