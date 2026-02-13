@@ -36,21 +36,26 @@ router.post('/register', async (req, res)=>{
 //Ya con los roles
 router.post('/login', async (req, res) => {
     try {
+        //Se busca en el body el correo y contraseña del usuario
     const { email, password } = req.body;
 
+    //Verifica si faltan campos
     if (!email || !password) {
         return res.status(400).json({ error: 'Email y contraseña son requeridos' });
     }
 
+    //Se busca en la tabla de user
     const user = await prisma.user.findUnique({
         where: { email }
     });
 
+    //Si la contraseña no es correcta
     if (!user || user.password !== password) {
         return res.status(401).json({ error: 'Datos incorrectos' });
     }
 
-    return res.status(200).json({
+    //Se entrega el resultado
+    return res.status(201).json({
         message: 'Inicio de sesión correcto',
         user: {
             id: user.id,
@@ -67,27 +72,26 @@ router.post('/login', async (req, res) => {
 
 //? Rutas de administrador
 
+
 //*Se crea un evento
-
-//!Falta probar todas las rutas en thunderclient
-
 router.post('/events', async(req, res)=>{
     try{
         //Se busca en el body los parametros
-        const [name, date, time, description] = req.body;
+        const {name, date, time, state, type, description} = req.body;
+
         //Validaciones si faltan campos
-        if(!name || !date || !time || !description){
+        if(!name || !date || !time || !state || !type || !description){
             console.log("Faltan parametros");
             return res.status(404).json({message: "Faltan parametros"})
         }
 
         //Aqui se crea el evento en la ruta
         const event = await prisma.events.create({
-            data: {name, date, time, description}
+            data: {name, date, time, state, type, description}
         });
 
         //Se entrega el resultado
-        res.status(200).json({
+        res.status(201).json({
             message: "Se creó el evento",
             event: event
         });
@@ -110,7 +114,7 @@ router.get('/events', async(req, res)=>{
         });
 
         //Resultado final
-        return res.status(200).json({
+        return res.status(201).json({
             message: "Eventos encontrados",
             events: events
         });
@@ -153,13 +157,59 @@ router.delete('/events/:id', async(req, res)=>{
 
 
         //Se entrega el resultado final
-        return res.status(200).json({
+        return res.status(201).json({
             message: "Evento eliminado exitosamente",
             event: event // Se devuelve el evento eliminado
         });
     }catch(error){
         console.log(error);
         return res.status(500).json({ error: "Error al eliminar el evento"});
+    }
+});
+
+//* Se actualiza un evento
+router.put('/events/:id', async(req, res)=>{
+    try{
+        //Se busca por id
+        const {id} = req.params;
+
+        //Lo que se va a actualizar
+        const {name, date, time, description, state, type} = req.body;
+
+        //Se busca el evento en la tabla
+        const event = await prisma.events.findUnique({
+            where: {id: parseInt(id)}
+        });
+
+        //Validacion si existe
+        if(!event){
+            console.log(`No se encontro un evento con ID ${id}`);
+            return res.status(404).json({message: `No se encontro un evento con un ID ${id}`});
+        };
+
+        //Se actualiza el evento
+        const update = await prisma.events.update({
+            where: {id: parseInt(id)},
+            data: {
+                name,
+                date,
+                time,
+                description,
+                state,
+                type
+            }
+        })
+
+
+        //Se entrega resultado
+        return res.status(201).json({
+            message: "El evento se actualizo con exito",
+            event: update
+        });
+
+    }catch(error){
+        console.log(error);
+        return res.status(500).json({error: "Error en actualizar el evento"})
     }
 });
 

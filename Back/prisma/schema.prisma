@@ -12,8 +12,9 @@ datasource db {
 }
 
 enum Role {
-  STUDENT
-  ADMIN
+  STUDENT //Solo puede ver y aceptar escenarios
+  ADMIN   //Administra toda la pagina, con CRUD
+  TEACHER //Solicita el escenario al admin
 }
 
 
