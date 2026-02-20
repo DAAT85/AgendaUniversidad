@@ -1,12 +1,14 @@
 import React from "react";
 import "./NavBar.css";
 import Swal from 'sweetalert2';
-import { Link } from "react-router-dom";
-import { useState } from "react"; //Para el boton de inico de sesion
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react"; 
 
 function NavBar() {
   //Para el cambio de estilo de boton y que cambie a "Cerrar sesion"
   const [activo, setActivo] = useState(false);
+
+  const navigate = useNavigate();
 
   const openModal = () => {
   if (activo) {
@@ -23,7 +25,9 @@ function NavBar() {
     }).then((result) => {
       if (result.isConfirmed) {
         setActivo(false); // Cierra sesión
-        Swal.fire('Sesión cerrada', '', 'success');
+        Swal.fire('Sesión cerrada', '', 'success').then(()=>{
+          navigate("/");
+        });
       }
     });
   } else {
@@ -391,7 +395,9 @@ const openLoginModal = (userType) => {
               title: '¡Bienvenido!',
               text: `Hola ${result.user?.name || result.admin?.name || result.name}`,
               confirmButtonColor: '#53A600'
-            });
+            }).then(()=>{
+              navigate("/admin")
+            })
             setActivo(true);
           } else {
             // Error de credenciales

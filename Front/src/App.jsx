@@ -3,8 +3,10 @@ import Home from './Home'
 import Footer from './Footer'
 import './App.css'
 import { Routes, Route } from "react-router-dom";
+//?Importaciones para las rutas
 import Quejas from './Quejas';
 import Calendario from "./Calendario";
+import Admin from './Admin';
 
 function App() {
   return (
@@ -12,7 +14,6 @@ function App() {
       <NavBar />
 
       <Routes>
-
         <Route 
           path="/" 
           element={
@@ -21,8 +22,6 @@ function App() {
                 <h1 className="text-success fw-bold mb-4">Calendarios de Eventos</h1></div>
               <Calendario />
               <Home />
-              
-              
             </>
           } 
         />
@@ -33,6 +32,11 @@ function App() {
         <Route 
           path="/Calendario" 
           element={<Calendario />} 
+        />
+
+        <Route
+          path='/admin'
+          element={<Admin />}
         />
       </Routes>
 

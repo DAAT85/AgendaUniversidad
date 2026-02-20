@@ -72,7 +72,6 @@ router.post('/login', async (req, res) => {
 
 //? Rutas de administrador
 
-
 //*Se crea un evento
 router.post('/events', async(req, res)=>{
     try{
@@ -103,7 +102,7 @@ router.post('/events', async(req, res)=>{
     }
 })
 
-//*Se obtiene los eventos
+//**Se obtiene los eventos
 router.get('/events', async(req, res)=>{
     try{
         //Devuelve todos los eventos
@@ -210,6 +209,18 @@ router.put('/events/:id', async(req, res)=>{
     }catch(error){
         console.log(error);
         return res.status(500).json({error: "Error en actualizar el evento"})
+    }
+});
+
+//?Rutas de estudiante
+
+//Aqui usara el middleware
+router.post('/event-registrer', async(req, res)=>{
+    try{
+
+    }catch(error){
+        console.log(error)
+        return res.status(500).json({error: 'Hay un problema con la ruta en el servidor'})
     }
 });
 

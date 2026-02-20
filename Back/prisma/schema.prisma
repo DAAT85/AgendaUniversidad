@@ -12,7 +12,7 @@ datasource db {
 }
 
 enum Role {
-  STUDENT //Solo puede ver y aceptar escenarios
+  MOD //Solo puede ver y aceptar escenarios
   ADMIN   //Administra toda la pagina, con CRUD
   TEACHER //Solicita el escenario al admin
 }
@@ -24,7 +24,7 @@ model User {
   email       String   @unique
   password    String
   dependence  String
-  role        Role     @default(STUDENT)
+  role        Role     @default(MOD)
   createdAt   DateTime @default(now())
 }
 

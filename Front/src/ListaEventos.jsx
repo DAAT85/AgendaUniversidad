@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import './Eventos.css'; 
 
@@ -14,12 +14,9 @@ const handleRegistro = (nombreEvento) => {
   });
 };
 
-
-function ContenedorEvento({ id, fecha, nombre, descripcion, hora }) {
-  // Al hacer clic, llamamos a handleRegistro y le pasamos el nombre
+function ContenedorEvento({ fecha, nombre, descripcion, hora }) {
   return (
     <div className="evento-item">
-      {/* Columna Izquierda: Fecha y Hora */}
       <div className="evento-fecha-hora">
         <p className="evento-fecha">{fecha}</p>
         <p className="evento-hora">{hora}</p>
@@ -43,33 +40,44 @@ function ContenedorEvento({ id, fecha, nombre, descripcion, hora }) {
 }
 
 function ListaEventos() {
-  // Ejemplos
-  const eventosEjemplo = [
-    {
-      id: 1,
-      fecha: '08 Nov',
-      hora: '10:00 AM',
-      nombre: 'Conferencia de Programación Avanzada',
-      descripcion: 'Sesión para desarrolladores web.',
-    },
-    {
-      id: 2,
-      fecha: '15 Nov',
-      hora: '04:00 PM',
-      nombre: 'Taller de Machine Learning',
-      descripcion: 'Introducción a modelos de ML con Python y Scikit-learn.',
-    },
-  ];
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/api/events");
+        const result = await response.json();
+        setEvents(result.events);
+      } catch (error) {
+        Swal.fire({ icon: "error", title: "Error", text: "No se pudieron cargar los eventos" });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvents();
+  }, []);
+
+  if (loading) return <p style={{ textAlign: 'center' }}>Cargando eventos...</p>;
 
   return (
-
     <div className="contenedor-pagina">
       <div className="lista-eventos-container">
-        {eventosEjemplo.map(evento => (
-          <ContenedorEvento key={evento.id} {...evento} />
-        ))}
+
+        {events.length === 0 
+          ? <p style={{ textAlign: 'center' }}>No hay eventos disponibles por el momento</p>
+          : events.map(evento => (
+              <ContenedorEvento
+                key={evento.id}
+                fecha={evento.date}
+                hora={evento.time}
+                nombre={evento.name}
+                descripcion={evento.description}
+              />
+            ))
+        }
+
       </div>
-      
     </div>
   );
 }
