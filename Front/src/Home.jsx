@@ -1,59 +1,98 @@
-import React from "react";
-import './styles/Home.css'
-import FilterIcon from './assets/Filter.svg';
-// Se importa la función que se definió en ListaEventos.jsx
-import ListaEventos from "./ListaEventos.jsx";
-import NavBar from "./NavBar.jsx";
+import React, { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
+
 import Footer from "./Footer.jsx";
+import './Eventos.css'; 
 
-function Home(){
-    return(
-    <>
-        <header>
-            <div className="container bg-light p-5 mt-4 rounded shadow-sm text-center" style={{ maxWidth: '600px' }}>
-                
+//!Revisar porque no aparece
+const handleRegistro = (nombreEvento) => {
+  Swal.fire({
+    title: '¡Registro Exitoso!',
+    html: `Te has registrado con éxito al evento:<br><b>${nombreEvento}</b>. <br>¡Revisa tu correo para más detalles!`,
+    icon: 'success',
+    confirmButtonText: 'Aceptar',
+    confirmButtonColor: '#1E8449', 
+    timer: 5000, 
+    timerProgressBar: true,
+  });
+};
 
-                <h4 className="text-success mb-3" >Seleccione escenario educativo a consultar</h4>
-
-                {/* Contenedor con icono */}
-                <div className="position-relative d-inline-block w-75 mx-auto">
-                    <img
-                    src={FilterIcon}
-                    alt="Filtro"
-                    style={{
-                        position: 'absolute',
-                        left: '10px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        width: '24px',
-                        height: '24px',
-                        pointerEvents: 'none'
-                    }}
-                />
-                    <select className="form-select w-100 form-select-sm ps-5">
-                        <option value="#">Todos</option>
-                        <option value="#">Aula DGRE</option>
-                        <option value="#">CIAM Colima 1</option>
-                        <option value="#">CIAM Villa de Alvarez</option>
-                        <option value="#">CIAM Tecoman</option>
-                        <option value="#">CIAM Colima 2</option>
-                        <option value="#">CIAM Coquimatlan</option>
-                        <option value="#">CIAM Manzanillo</option>
-                        <option value="#">Cabina para grabacion y video</option>
-                    </select>
-                </div>
-            </div>
-        </header>
-            
-            
-        <main>
-            <ListaEventos /> 
-        </main>
-        
-        <Footer />
-    </>
-    );
+function ContenedorEvento({ fecha, nombre, descripcion, hora }) {
+  return (
+    <div className="evento-item">
+      <div className="evento-fecha-hora">
+        <p className="evento-fecha">{fecha}</p>
+        <p className="evento-hora">{hora}</p>
+      </div>
+      
+      <div className="evento-info">
+        <h3 className="evento-nombre">{nombre}</h3>
+        <p className="evento-descripcion">{descripcion}</p>
+      </div>
+      
+      <div className="evento-registro">
+        <button 
+          className="btn-registro"
+          onClick={() => handleRegistro(nombre)}
+        >
+          Registrarse
+        </button>
+      </div>
+    </div>
+  );
 }
 
 
-export default Home;
+//!Algo esta mal aqui en el nombre de la funcion y la importacion de ListEventos.jsx
+function ListaEventos({ filtro = "Todos" }) {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/api/events");
+        const result = await response.json();
+        setEvents(result.events);
+      } catch (error) {
+        Swal.fire({ icon: "error", title: "Error", text: "No se pudieron cargar los eventos" });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvents();
+  }, []);
+
+
+const eventosFiltrados = filtro === "Todos"
+    ? events
+    : events.filter(evento => evento.type === filtro);
+
+  if (loading) return <p style={{ textAlign: 'center' }}>Cargando eventos...</p>;
+
+  return (
+    <>
+    <div className="contenedor-pagina">
+      <div className="lista-eventos-container">
+
+        {eventosFiltrados.length === 0 
+          ? <p style={{ textAlign: 'center' }}>No hay eventos disponibles para este escenario</p>
+          : eventosFiltrados.map(evento => (
+              <ContenedorEvento
+                key={evento.id}
+                fecha={evento.date}
+                hora={evento.time}
+                nombre={evento.name}
+                descripcion={evento.description}
+              />
+            ))
+        }
+
+      </div>
+    </div>
+     <Footer />
+     </>
+  );
+}
+
+export default ListaEventos;

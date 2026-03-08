@@ -43,71 +43,132 @@ function Quejas() {
   return (
     <>
     
-    <div className="quejas-container">
-      <div className="quejas-card">
-        <h2 className="quejas-title" style={{ color: '#53A600' }}>Quejas y Sugerencias</h2>
-        <p className="quejas-subtitle">Tu opinión nos ayuda a mejorar. Por favor, sé específico con tu reporte.</p>
+    <div
+  className="d-flex justify-content-center align-items-center py-5 px-3"
+  style={{ background: "#f0f7ee", minHeight: "100vh" }}
+>
+  <div
+    className="w-100 p-4"
+    style={{
+      maxWidth: "580px",
+      background: "#fff",
+      borderRadius: "20px",
+      borderTop: "6px solid #2d6a27",
+      borderBottom: "4px solid #c8a951",
+      boxShadow: "0 8px 30px rgba(0,0,0,0.09)"
+    }}
+  >
 
-        <form onSubmit={handleSubmit} className="quejas-form">
-          {/* Campo Tipo de Reporte */}
-          <div className="form-group">
-            <label htmlFor="tipo">¿Qué deseas reportar?</label>
-            <select
-              id="tipo"
-              name="tipo"
-              value={formData.tipo}
-              onChange={handleChange}
-              required
-            >
-              <option value="queja">Queja Formal</option>
-              <option value="sugerencia">Sugerencia de Mejora</option>
-              <option value="felicitacion">Agradecimiento / Felicitación</option>
-            </select>
-          </div>
-          
-          {/* Campo Nombre (Opcional) */}
-          <div className="form-group">
-            <label htmlFor="nombre">Nombre (Opcional)</label>
-            <input
-              type="text"
-              id="nombre"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              placeholder="Ej. Diego Sanchez"
-            />
-          </div>
+    {/* Título */}
+    <h2 className="fw-bold mb-1" style={{ color: "#1e4d1a" }}>
+      Quejas y Sugerencias
+    </h2>
+    <p className="mb-4" style={{ color: "#6c757d", fontSize: "0.9rem" }}>
+      Tu opinión nos ayuda a mejorar. Por favor, sé específico con tu reporte.
+    </p>
 
-          <div className="form-group">
-            <label htmlFor="email">Correo Electrónico (Opcional)</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Ej. correo@ucol.mx"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="mensaje">Detalle de la Queja/Sugerencia</label>
-            <textarea
-              id="mensaje"
-              name="mensaje"
-              rows="5"
-              value={formData.mensaje}
-              onChange={handleChange}
-              placeholder="Describe tu situación o propuesta de manera clara y concisa."
-              required
-            ></textarea>
-          </div>
+    <form onSubmit={handleSubmit}>
 
-          <button type="submit" className="submit-btn">
-            Enviar Reporte
-          </button>
-        </form>
+      {/* Tipo de reporte */}
+      <div className="mb-3">
+        <label className="form-label fw-semibold" style={{ color: "#2d6a27" }}>
+          ¿Qué deseas reportar?
+        </label>
+        <select
+          id="tipo"
+          name="tipo"
+          value={formData.tipo}
+          onChange={handleChange}
+          required
+          className="form-select"
+          style={{ borderColor: "#2d6a27", borderRadius: "10px" }}
+        >
+          <option value="queja">Queja Formal</option>
+          <option value="sugerencia">Sugerencia de Mejora</option>
+          <option value="felicitacion">Agradecimiento / Felicitación</option>
+        </select>
       </div>
-    </div>
+
+      {/* Nombre */}
+      <div className="mb-3">
+        <label className="form-label fw-semibold" style={{ color: "#2d6a27" }}>
+          Nombre <span style={{ color: "#6c757d", fontWeight: 400 }}>(Opcional)</span>
+        </label>
+        <input
+          type="text"
+          id="nombre"
+          name="nombre"
+          value={formData.nombre}
+          onChange={handleChange}
+          placeholder="Ej. Diego Sanchez"
+          className="form-control"
+          style={{ borderColor: "#2d6a27", borderRadius: "10px" }}
+        />
+      </div>
+
+      {/* Email */}
+      <div className="mb-3">
+        <label className="form-label fw-semibold" style={{ color: "#2d6a27" }}>
+          Correo Electrónico <span style={{ color: "#6c757d", fontWeight: 400 }}>(Opcional)</span>
+        </label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          placeholder="Ej. correo@ucol.mx"
+          className="form-control"
+          style={{ borderColor: "#2d6a27", borderRadius: "10px" }}
+        />
+      </div>
+
+      {/* Mensaje */}
+      <div className="mb-4">
+        <label className="form-label fw-semibold" style={{ color: "#2d6a27" }}>
+          Detalle de la Queja/Sugerencia
+        </label>
+        <textarea
+          id="mensaje"
+          name="mensaje"
+          rows="5"
+          value={formData.mensaje}
+          onChange={handleChange}
+          placeholder="Describe tu situación o propuesta de manera clara y concisa."
+          required
+          className="form-control"
+          style={{ borderColor: "#2d6a27", borderRadius: "10px", resize: "vertical" }}
+        />
+      </div>
+
+      {/* Botón enviar */}
+      <button
+        type="submit"
+        className="btn w-100 fw-bold"
+        style={{
+          background: "#2d6a27",
+          color: "#fff",
+          border: "2px solid #2d6a27",
+          borderRadius: "20px",
+          padding: "0.6rem",
+          fontSize: "1rem",
+          transition: "all 0.2s"
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.background = "#1e4d1a";
+          e.currentTarget.style.borderColor = "#c8a951";
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.background = "#2d6a27";
+          e.currentTarget.style.borderColor = "#2d6a27";
+        }}
+      >
+        Enviar Reporte
+      </button>
+
+    </form>
+  </div>
+</div>
     
     <Footer />
     </>

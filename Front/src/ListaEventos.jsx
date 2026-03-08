@@ -2,17 +2,51 @@ import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import './Eventos.css'; 
 
-const handleRegistro = (nombreEvento) => {
-  Swal.fire({
-    title: '¡Registro Exitoso!',
-    html: `Te has registrado con éxito al evento:<br><b>${nombreEvento}</b>. <br>¡Revisa tu correo para más detalles!`,
-    icon: 'success',
-    confirmButtonText: 'Aceptar',
-    confirmButtonColor: '#1E8449', 
-    timer: 5000, 
-    timerProgressBar: true,
-  });
+const handleRegistro = async (nombreEvento) => {  
+  try {
+    const response = await fetch("http://localhost:3000/api/event-registrer", {  
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": localStorage.getItem("token")  
+      },
+    });
+
+    const data = await response.json();
+
+    
+    if (response.ok) {
+      Swal.fire({
+        title: '¡Registro Exitoso!',
+        html: `Te has registrado con éxito al evento:<br><b>${nombreEvento}</b>.`,
+        icon: 'success',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#1E8449',
+        timer: 5000,
+        timerProgressBar: true,
+      });
+
+    } else {
+      
+      Swal.fire({
+        title: 'Acceso Denegado',
+        text: data.error || 'Inicia sesión para registrarte.',
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#E74C3C',
+      });
+    }
+
+  } catch (error) {
+    Swal.fire({
+      title: 'Error',
+      text: 'No se pudo conectar con el servidor.',
+      icon: 'error',
+      confirmButtonText: 'Aceptar',
+    });
+  }
 };
+
 
 function ContenedorEvento({ fecha, nombre, descripcion, hora }) {
   return (

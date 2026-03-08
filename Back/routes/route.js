@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import e, { json } from "express";
 import express from "express";
+import validationEvent from "../middleware/validacionEstudiante.js";
 
 //Se da de alta los metodos a usar
 const prisma = new PrismaClient();
@@ -212,12 +213,13 @@ router.put('/events/:id', async(req, res)=>{
     }
 });
 
-//?Rutas de estudiante
+//?Rutas del profesor
 
-//Aqui usara el middleware
-router.post('/event-registrer', async(req, res)=>{
+//Aqui usara el middleware para saber si ya esta autenticado
+router.post('/event-registrer', validationEvent, async(req, res)=>{
     try{
-
+        //No hace falta colocar mas cosas, ya que el middleware se encargo de verificar
+        return res.status(200).json({message: "Usuario registrado al evento"});
     }catch(error){
         console.log(error)
         return res.status(500).json({error: 'Hay un problema con la ruta en el servidor'})

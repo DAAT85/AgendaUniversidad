@@ -53,9 +53,11 @@ function NavBar() {
             color: #458a00;
           }
         </style>
+
+
         <div class="d-grid gap-3">
           <button id="btn-admin" class="btn btn-success">Administrador</button>
-          <button id="btn-estudiante" class="btn btn-success">Estudiante</button>
+          <button id="btn-estudiante" class="btn btn-success">Profesor</button>
           <p>¿No te has registrado? <button id="btn-registrer" class="text-primary text-decoration-underline">Click aqui</button></p>
         </div>
       `,
@@ -424,44 +426,88 @@ const openLoginModal = (userType) => {
 };
 
   return (
-    <header className="navbar-custom">
-      <div className="navbar-container">
-        
-        <div className="navbar-left">
-          <Link to="/" className="d-flex align-items-center text-decoration-none">
-            <img
-              src="/udc.png"
-              alt="Logo UdeC"
-              className="navbar-logo"
-            />
-            <div className="navbar-text ms-2">
-              <h1 className="navbar-title mb-0">Universidad de Colima</h1>
-              <p className="navbar-subtitle mb-0">Dirección General de Recursos Educativos</p>
-            </div>
-          </Link>
-        </div>
+    <header
+  style={{
+    background: "#fff",
+    borderBottom: "4px solid #c8a951",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.08)"
+  }}
+>
+  <div
+    className="d-flex align-items-center justify-content-between px-4 py-2 flex-wrap gap-3"
+  >
 
-        <nav className="navbar-menu">
-          <Link to="/Calendario" className="nav-link"> CALENDARIO </Link>
-          <Link to="/Quejas" className="nav-link"> QUEJAS Y SUGERENCIAS </Link>   
-        </nav>
-
-        <div className="navbar-right">
-        {/*Hecha el ojo aqui para cambiar el boton de estado, o sea UseState-------------------------------------------------- */}
-          <button 
-            onClick={openModal} 
-            className="navbar-btn"
-            style={{
-              backgroundColor: activo ? 'red' : 'green',
-            }}
-          >
-            {activo ? 'Cerrar sesión' : 'Ingresar'}
-          </button>
-        </div>
-        
+    {/* Logo + Texto */}
+    <Link to="/" className="d-flex align-items-center text-decoration-none gap-2">
+      <img
+        src="/udc.png"
+        alt="Logo UdeC"
+        style={{ height: "55px", objectFit: "contain" }}
+      />
+      <div>
+        <h1
+          className="mb-0 fw-bold"
+          style={{ color: "#1e4d1a", fontSize: "1rem", letterSpacing: "0.5px" }}
+        >
+          Universidad de Colima
+        </h1>
+        <p
+          className="mb-0"
+          style={{ color: "#2d6a27", fontSize: "0.72rem", letterSpacing: "0.3px" }}
+        >
+          Dirección General de Recursos Educativos
+        </p>
       </div>
-      <hr className="navbar-divider" />
-    </header>
+    </Link>
+
+    {/* Links de navegación */}
+    <nav className="d-flex gap-4">
+      <Link
+        to="/Calendario"
+        className="text-decoration-none fw-semibold"
+        style={{ color: "#2d6a27", fontSize: "0.85rem", letterSpacing: "1px" }}
+        onMouseEnter={e => e.target.style.color = "#c8a951"}
+        onMouseLeave={e => e.target.style.color = "#2d6a27"}
+      >
+        CALENDARIO
+      </Link>
+      <Link
+        to="/Quejas"
+        className="text-decoration-none fw-semibold"
+        style={{ color: "#2d6a27", fontSize: "0.85rem", letterSpacing: "1px" }}
+        onMouseEnter={e => e.target.style.color = "#c8a951"}
+        onMouseLeave={e => e.target.style.color = "#2d6a27"}
+      >
+        QUEJAS Y SUGERENCIAS
+      </Link>
+    </nav>
+
+    {/* Botón Ingresar / Cerrar sesión */}
+    <button
+      onClick={openModal}
+      className="btn btn-sm fw-semibold"
+      style={{
+        background: activo ? "transparent" : "#2d6a27",
+        color: activo ? "#e74a3b" : "#fff",
+        border: activo ? "2px solid #e74a3b" : "2px solid #2d6a27",
+        borderRadius: "20px",
+        padding: "0.4rem 1.2rem",
+        transition: "all 0.2s"
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.background = activo ? "#e74a3b" : "#1e4d1a";
+        e.currentTarget.style.color = "#fff";
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.background = activo ? "transparent" : "#2d6a27";
+        e.currentTarget.style.color = activo ? "#e74a3b" : "#fff";
+      }}
+    >
+      {activo ? "Cerrar sesión" : "Ingresar"}
+    </button>
+
+  </div>
+</header>
   );
 }
 
