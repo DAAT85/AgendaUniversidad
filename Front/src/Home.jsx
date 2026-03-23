@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 
-import Footer from "./Footer.jsx";
-import './Eventos.css'; 
+import Footer from "./components/Footer.jsx";
+import './styles/Eventos.css'; 
 
 //!Revisar porque no aparece
 const handleRegistro = (nombreEvento) => {

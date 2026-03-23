@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
-import './Quejas.css'; 
-import NavBar from "./NavBar.jsx";
-import Footer from "./Footer.jsx";
+import '../styles/Quejas.css'; 
+import NavBar from "../components/NavBar.jsx";
+import Footer from "../components/Footer.jsx";
 
 function Quejas() {
   const [formData, setFormData] = useState({

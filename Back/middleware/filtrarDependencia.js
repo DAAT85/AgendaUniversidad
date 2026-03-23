@@ -19,3 +19,5 @@ const filterByDependence = async (req, res, next) => {
         res.status(500).json({ error: "Error en el middleware de filtro" });
     }
 };
+
+export default filterByDependence;

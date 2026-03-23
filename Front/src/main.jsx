@@ -1,7 +1,6 @@
 import React from 'react'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
 import App from './App.jsx'
 //Importacion de librerias de forma global
 import 'bootstrap/dist/css/bootstrap.min.css';

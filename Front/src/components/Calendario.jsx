@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./Calendario.css";
+import "../styles/Calendario.css"
 
 export default function Calendario() {
   const hoy = new Date();

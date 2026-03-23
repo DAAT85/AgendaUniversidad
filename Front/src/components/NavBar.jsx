@@ -1,5 +1,5 @@
 import React from "react";
-import "./NavBar.css";
+import "../styles/NavBar.css";
 import Swal from 'sweetalert2';
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react"; 

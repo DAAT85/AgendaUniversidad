@@ -1,13 +1,12 @@
-import NavBar from './NavBar'
+import NavBar from './components/NavBar'
 import Home from './Home'
-import Footer from './Footer'
-import './App.css'
+import Footer from './components/Footer'
 import { Routes, Route } from "react-router-dom";
 //?Importaciones para las rutas
-import Quejas from './Quejas';
-import Calendario from "./Calendario";
-import Admin from './Admin';
-import ModeracionAdmin from './ModeracionAdmin';
+import Quejas from './pages/Quejas';
+import Calendario from "./components/Calendario";
+import Admin from './pages/Admin';
+import ModeracionAdmin from './pages/ModeracionAdmin';
 
 function App() {
   return (
