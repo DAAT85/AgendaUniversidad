@@ -1,6 +1,7 @@
 import { useState } from "react";
 import EventosAdmin from "./EventosAdmin";
 import UsuariosAdmin from "./UsuariosAdmin";
+import EscenariosAdmin from "./EscenariosAdmin";
 
 function Admin() {
   const [tab, setTab] = useState("eventos");
@@ -8,15 +9,15 @@ function Admin() {
   return (
     <>
       <header
-    className="px-4 py-3 text-white text-center"
-    style={{
-      background: "linear-gradient(135deg, #2d6a27 0%, #3d8a30 100%)",
-      borderBottomLeftRadius: "20px",
-      borderBottomRightRadius: "20px",
-      boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-      borderBottom: "4px solid #c8a951"  // línea dorada institucional
-    }}
-  >
+      className="px-4 py-3 text-white text-center"
+      style={{
+        background: "linear-gradient(135deg, #2d6a27 0%, #3d8a30 100%)",
+        borderBottomLeftRadius: "20px",
+        borderBottomRightRadius: "20px",
+        boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+        borderBottom: "4px solid #c8a951"  
+      }}
+    >
     <p style={{ margin: 0, fontSize: "0.75rem", letterSpacing: "2px", color: "#c8a951" }}>
       UNIVERSIDAD DE COLIMA
     </p>
@@ -64,11 +65,27 @@ function Admin() {
           Usuarios
         </button>
       </li>
+      <li>
+        <button
+        className="btn btn-link fw-semibold text-decoration-none"
+          onClick={() => setTab("escenarios")}
+          style={{
+            color: tab === "escenarios" ? "#c8a951" : "#d4edda",
+            borderBottom: tab === "escenarios" ? "2px solid #c8a951" : "2px solid transparent",
+            borderRadius: 0,
+            paddingBottom: "4px",
+            transition: "all 0.2s"
+          }}
+        >
+          Escenarios
+        </button>
+      </li>
     </ul>
   </nav>
 
   {tab === "eventos" && <EventosAdmin />}
   {tab === "usuarios" && <UsuariosAdmin />}
+  {tab === "escenarios" && <EscenariosAdmin />}
     </>
   );
 }

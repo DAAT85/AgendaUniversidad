@@ -24,7 +24,7 @@ model User {
   email       String   @unique
   password    String
   dependence  String
-  role        Role     @default(MOD)
+  role        Role     @default(TEACHER)
   createdAt   DateTime @default(now())
 }
 

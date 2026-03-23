@@ -7,6 +7,7 @@ import { Routes, Route } from "react-router-dom";
 import Quejas from './Quejas';
 import Calendario from "./Calendario";
 import Admin from './Admin';
+import ModeracionAdmin from './ModeracionAdmin';
 
 function App() {
   return (
@@ -38,6 +39,11 @@ function App() {
           path='/admin'
           element={<Admin />}
         />
+
+        <Route 
+          path='/mod'
+          element={<ModeracionAdmin />}
+          />
       </Routes>
 
       <Footer />

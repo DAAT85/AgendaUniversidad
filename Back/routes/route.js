@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import e, { json } from "express";
 import express from "express";
 import validationEvent from "../middleware/validacionEstudiante.js";
+import filterByDependence from "../middleware/filtrarDependencia.js"
 
 //Se da de alta los metodos a usar
 const prisma = new PrismaClient();
@@ -210,6 +211,29 @@ router.put('/events/:id', async(req, res)=>{
     }catch(error){
         console.log(error);
         return res.status(500).json({error: "Error en actualizar el evento"})
+    }
+});
+
+//?Rutas del Moderador
+
+//Ruta de filtro
+router.get('/moderator/events', filterByDependence, async (req, res) => {
+    try {
+        const events = await prisma.events.findMany({
+            where: {
+                dependence: req.userDependence // Solo trae eventos de su misma sede
+            },
+            orderBy: {
+                createdAt: 'asc' // IMPORTANTE: El que solicitó primero aparece primero
+            }
+        });
+
+        res.json({
+            dependence: req.userDependence,
+            events: events
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Error al obtener eventos de moderación" });
     }
 });
 
