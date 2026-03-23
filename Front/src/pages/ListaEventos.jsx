@@ -80,9 +80,16 @@ function ListaEventos() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/events");
+        
+        const token = localStorage.getItem("token");
+        const response = await fetch("http://localhost:3000/api/events", {
+          headers: {
+            'Authorization': `Bearer ${token}` 
+          }
+        });
         const result = await response.json();
-        setEvents(result.events);
+        setEvents(result.events || []); 
+
       } catch (error) {
         Swal.fire({ icon: "error", title: "Error", text: "No se pudieron cargar los eventos" });
       } finally {

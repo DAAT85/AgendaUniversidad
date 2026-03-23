@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 
+//?Solo se va a mostrar, con cierto inicio de sesion
 //Se simula el usuario logueado (Moderador asignado al CIAM)
 const usuarioLogueado = {
     nombre: "Moderador 1",

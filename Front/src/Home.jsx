@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 import Footer from "./components/Footer.jsx";
 import './styles/Eventos.css'; 
 
-//!Revisar porque no aparece
+
 const handleRegistro = (nombreEvento) => {
   Swal.fire({
     title: '¡Registro Exitoso!',
@@ -43,7 +43,6 @@ function ContenedorEvento({ fecha, nombre, descripcion, hora }) {
 }
 
 
-//!Algo esta mal aqui en el nombre de la funcion y la importacion de ListEventos.jsx
 function ListaEventos({ filtro = "Todos" }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,9 +50,23 @@ function ListaEventos({ filtro = "Todos" }) {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/events");
+
+        const token = localStorage.getItem("token");
+        if (!token) {
+          Swal.fire({ icon: 'warning', title: 'Inicia sesión primero' });
+          navigate('/login');
+          return;
+        }
+
+        const response = await fetch("http://localhost:3000/api/events", {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
         const result = await response.json();
-        setEvents(result.events);
+        setEvents(result.events || []);
+
       } catch (error) {
         Swal.fire({ icon: "error", title: "Error", text: "No se pudieron cargar los eventos" });
       } finally {
@@ -72,26 +85,26 @@ const eventosFiltrados = filtro === "Todos"
 
   return (
     <>
-    <div className="contenedor-pagina">
-      <div className="lista-eventos-container">
-
-        {eventosFiltrados.length === 0 
-          ? <p style={{ textAlign: 'center' }}>No hay eventos disponibles para este escenario</p>
-          : eventosFiltrados.map(evento => (
-              <ContenedorEvento
-                key={evento.id}
-                fecha={evento.date}
-                hora={evento.time}
-                nombre={evento.name}
-                descripcion={evento.description}
-              />
-            ))
-        }
-
+      <div className="contenedor-pagina">
+        <div className="lista-eventos-container">
+    
+          {eventosFiltrados.length === 0 
+            ? <p style={{ textAlign: 'center' }}>No hay eventos disponibles para este escenario</p>
+            : eventosFiltrados.map(evento => (
+                <ContenedorEvento
+                  key={evento.id}
+                  fecha={evento.date}
+                  hora={evento.time}
+                  nombre={evento.name}
+                  descripcion={evento.description}
+                />
+              ))
+          }
+  
+        </div>
       </div>
-    </div>
-     <Footer />
-     </>
+      <Footer />
+    </>
   );
 }
 

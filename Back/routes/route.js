@@ -1,10 +1,16 @@
 import { PrismaClient } from "@prisma/client";
-import e, { json } from "express";
 import express from "express";
+import dotenv from 'dotenv';
+import jwt from 'jsonwebtoken';
+
+//Middlewares
 import validationEvent from "../middleware/validacionEstudiante.js";
 import filterByDependence from "../middleware/filtrarDependencia.js"
+import verificarToken from "../middleware/auth.js";
+import verificarRol from "../middleware/roles.js";
 
 //Se da de alta los metodos a usar
+dotenv.config();
 const prisma = new PrismaClient();
 const router = express.Router();
 
@@ -12,60 +18,63 @@ const router = express.Router();
 
 //?Ruta de log in
 
-router.post('/register', async (req, res)=>{
-    try{
-        const {name, email, password, dependence } = req.body;
+// router.post('/register', async (req, res)=>{
+//     try{
+//         const {name, email, password, dependence } = req.body;
 
-        //Validacion de campos
-        if (!name || !email || !password || !dependence) {
-            return res.status(400).json({ error: "Faltan campos requeridos" });
-        }
+//         //Validacion de campos
+//         if (!name || !email || !password || !dependence) {
+//             return res.status(400).json({ error: "Faltan campos requeridos" });
+//         }
 
-        const user = await prisma.user.create({
-            data: {name, email, password, dependence}
-        });
+//         const user = await prisma.user.create({
+//             data: {name, email, password, dependence}
+//         });
 
-        // 201 = creado correctamente
-        res.status(201).json(user); 
-    }catch(error){
-        //Error en caso de algo
-        console.log(error)
-        res.status(500).json({ error: "Error al registrar el estudiante" });
-    }
-});
+//         // 201 = creado correctamente
+//         res.status(201).json(user); 
+//     }catch(error){
+//         //Error en caso de algo
+//         console.log(error)
+//         res.status(500).json({ error: "Error al registrar el estudiante" });
+//     }
+// });
 
 
 //Ya con los roles
 router.post('/login', async (req, res) => {
     try {
-        //Se busca en el body el correo y contraseña del usuario
-    const { email, password } = req.body;
+        const { email, password } = req.body;
 
-    //Verifica si faltan campos
-    if (!email || !password) {
-        return res.status(400).json({ error: 'Email y contraseña son requeridos' });
-    }
-
-    //Se busca en la tabla de user
-    const user = await prisma.user.findUnique({
-        where: { email }
-    });
-
-    //Si la contraseña no es correcta
-    if (!user || user.password !== password) {
-        return res.status(401).json({ error: 'Datos incorrectos' });
-    }
-
-    //Se entrega el resultado
-    return res.status(201).json({
-        message: 'Inicio de sesión correcto',
-        user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email y contraseña son requeridos' });
         }
-    });
+
+        const user = await prisma.user.findUnique({
+            where: { email }
+        });
+
+        if (!user || user.password !== password) {
+            return res.status(401).json({ error: 'Datos incorrectos' });
+        }
+
+        //Generas el token con el rol incluido
+        const token = jwt.sign(
+            { id: user.id, email: user.email, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '8h' }
+        );
+
+        return res.status(200).json({
+            message: 'Inicio de sesión correcto',
+            token, //  Se envia al frontend
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
+        });
 
     } catch (error) {
         return res.status(500).json({ error: 'Error interno del servidor' });
@@ -75,7 +84,7 @@ router.post('/login', async (req, res) => {
 //? Rutas de administrador
 
 //*Se crea un evento
-router.post('/events', async(req, res)=>{
+router.post('/events', verificarToken, verificarRol("ADMIN"), async(req, res)=>{
     try{
         //Se busca en el body los parametros
         const {name, date, time, state, type, description} = req.body;
@@ -83,7 +92,7 @@ router.post('/events', async(req, res)=>{
         //Validaciones si faltan campos
         if(!name || !date || !time || !state || !type || !description){
             console.log("Faltan parametros");
-            return res.status(404).json({message: "Faltan parametros"})
+            return res.status(400).json({message: "Faltan parametros"})
         }
 
         //Aqui se crea el evento en la ruta
@@ -105,7 +114,7 @@ router.post('/events', async(req, res)=>{
 })
 
 //**Se obtiene los eventos
-router.get('/events', async(req, res)=>{
+router.get('/events', verificarToken, verificarRol("ADMIN" ,"MOD"),  async(req, res)=>{
     try{
         //Devuelve todos los eventos
         const events = await prisma.events.findMany({
@@ -115,7 +124,7 @@ router.get('/events', async(req, res)=>{
         });
 
         //Resultado final
-        return res.status(201).json({
+        return res.status(200).json({
             message: "Eventos encontrados",
             events: events
         });
@@ -130,15 +139,6 @@ router.get('/events', async(req, res)=>{
 //*Se elimina un evento
 router.delete('/events/:id', async(req, res)=>{
     try{
-        //Se busca por id, se usa req.params cuando se usa una especificacion, por ser un parametro
-        const {id} = req.params;
-
-        //Validacion en caso de no haber proporcionado
-        if(!id){
-            console.log(`No se proporciono un ID`);
-            return res.status(404).json({message: `No se proporciono un ID`});
-        }
-        
         //Se busca el evento 
         const event = await prisma.events.findUnique({
             where: {id: parseInt(id)}
@@ -158,7 +158,7 @@ router.delete('/events/:id', async(req, res)=>{
 
 
         //Se entrega el resultado final
-        return res.status(201).json({
+        return res.status(200).json({
             message: "Evento eliminado exitosamente",
             event: event // Se devuelve el evento eliminado
         });
@@ -203,7 +203,7 @@ router.put('/events/:id', async(req, res)=>{
 
 
         //Se entrega resultado
-        return res.status(201).json({
+        return res.status(200).json({
             message: "El evento se actualizo con exito",
             event: update
         });
@@ -217,7 +217,7 @@ router.put('/events/:id', async(req, res)=>{
 //?Rutas del Moderador
 
 //Ruta de filtro
-router.get('/moderator/events', filterByDependence, async (req, res) => {
+router.get('/moderator/events',verificarToken, verificarRol("MOD"), filterByDependence, async (req, res) => {
     try {
         const events = await prisma.events.findMany({
             where: {
@@ -240,7 +240,7 @@ router.get('/moderator/events', filterByDependence, async (req, res) => {
 //?Rutas del profesor
 
 //Aqui usara el middleware para saber si ya esta autenticado
-router.post('/event-registrer', validationEvent, async(req, res)=>{
+router.post('/event-registrer',verificarToken, verificarRol("TEACHER"), validationEvent, async(req, res)=>{
     try{
         //No hace falta colocar mas cosas, ya que el middleware se encargo de verificar
         return res.status(200).json({message: "Usuario registrado al evento"});

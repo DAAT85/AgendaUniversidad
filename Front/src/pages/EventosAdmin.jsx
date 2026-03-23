@@ -21,21 +21,26 @@ const tipos = ["Conferencia", "Taller", "Curso", "Cultural", "Deportivo", "Otro"
 function EventosAdmin(){
     const [events, setEvents] = useState([]);
     
-      // Metodo get para que se muestre los evento que hay
-      useEffect(() => {
+    useEffect(() => {
         const fetchEvents = async () => {
-          try {
-            const response = await fetch("http://localhost:3000/api/events");
+            try {
+
+            const token = localStorage.getItem("token"); 
+            const response = await fetch("http://localhost:3000/api/events", {
+                headers: {
+                '   Authorization': `Bearer ${token}` 
+                }
+            });
             const result = await response.json();
-            setEvents(result.events);
-          } catch (error) {
-            Swal.fire({ icon: "error", title: "Error", text: "No se pudieron cargar los eventos" });
-          }
+            setEvents(result.events || []); 
+            } catch (error) {
+                Swal.fire({ icon: "error", title: "Error", text: "No se pudieron cargar los eventos" });
+            }
         };
-        fetchEvents();
-      }, []);
-    
-      // Modal para editar los eventos
+            fetchEvents();
+        }, []);
+
+        // Modal para editar los eventos
     const openModal = (event = null, index = null) => {
         Swal.fire({
             title: event ? "Actualizar evento" : "Crear evento",
