@@ -114,7 +114,7 @@ router.post('/events', verificarToken, verificarRol("ADMIN"), async(req, res)=>{
 })
 
 //**Se obtiene los eventos
-router.get('/events', verificarToken, verificarRol("ADMIN" ,"MOD"),  async(req, res)=>{
+router.get('/events/admin', verificarToken, verificarRol("ADMIN" ,"MOD"),  async(req, res)=>{
     try{
         //Devuelve todos los eventos
         const events = await prisma.events.findMany({
@@ -136,6 +136,26 @@ router.get('/events', verificarToken, verificarRol("ADMIN" ,"MOD"),  async(req, 
     }
 });
 
+
+
+router.get('/events', async (req, res) => {
+    try {
+        const events = await prisma.events.findMany({
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        return res.status(200).json({
+            message: "Eventos encontrados",
+            events: events
+        });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: 'No se pudo encontrar el evento' });
+    }
+});
 //*Se elimina un evento
 router.delete('/events/:id', async(req, res)=>{
     try{

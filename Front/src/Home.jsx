@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
 import Footer from "./components/Footer.jsx";
@@ -6,15 +7,21 @@ import './styles/Eventos.css';
 
 
 const handleRegistro = (nombreEvento) => {
-  Swal.fire({
-    title: '¡Registro Exitoso!',
-    html: `Te has registrado con éxito al evento:<br><b>${nombreEvento}</b>. <br>¡Revisa tu correo para más detalles!`,
-    icon: 'success',
-    confirmButtonText: 'Aceptar',
-    confirmButtonColor: '#1E8449', 
-    timer: 5000, 
-    timerProgressBar: true,
-  });
+
+  const token = localStorage.getItem("token");
+  const navigate = useNavigate();
+
+  if (!token) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Inicia sesión primero',
+      text: 'Necesitas una cuenta para registrarte a un evento.',
+      confirmButtonText: 'Ir al login',
+      confirmButtonColor: '#1E8449',
+    }).then(() => navigate('/login')); 
+    return;
+  }
+
 };
 
 function ContenedorEvento({ fecha, nombre, descripcion, hora }) {
@@ -51,23 +58,13 @@ function ListaEventos({ filtro = "Todos" }) {
     const fetchEvents = async () => {
       try {
 
-        const token = localStorage.getItem("token");
-        if (!token) {
-          Swal.fire({ icon: 'warning', title: 'Inicia sesión primero' });
-          navigate('/login');
-          return;
-        }
-
-        const response = await fetch("http://localhost:3000/api/events", {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        const response = await fetch("http://localhost:3000/api/events");
 
         const result = await response.json();
         setEvents(result.events || []);
 
       } catch (error) {
+        console.log("Error", error);
         Swal.fire({ icon: "error", title: "Error", text: "No se pudieron cargar los eventos" });
       } finally {
         setLoading(false);

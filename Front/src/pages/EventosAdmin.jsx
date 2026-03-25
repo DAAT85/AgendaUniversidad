@@ -34,6 +34,7 @@ function EventosAdmin(){
             const result = await response.json();
             setEvents(result.events || []); 
             } catch (error) {
+                console.log("Error", error);
                 Swal.fire({ icon: "error", title: "Error", text: "No se pudieron cargar los eventos" });
             }
         };
