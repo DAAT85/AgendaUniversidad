@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 const API_URL = import.meta.env.VITE_API_URL;
-import './Eventos.css'; 
+import '../styles/Eventos.css'; 
 
 const handleRegistro = async (nombreEvento) => {  
   try {
@@ -51,26 +51,28 @@ const handleRegistro = async (nombreEvento) => {
 
 function ContenedorEvento({ fecha, nombre, descripcion, hora }) {
   return (
-    <div className="evento-item">
-      <div className="evento-fecha-hora">
-        <p className="evento-fecha">{fecha}</p>
-        <p className="evento-hora">{hora}</p>
-      </div>
-      
-      <div className="evento-info">
-        <h3 className="evento-nombre">{nombre}</h3>
-        <p className="evento-descripcion">{descripcion}</p>
-      </div>
-      
-      <div className="evento-registro">
-        <button 
-          className="btn-registro"
-          onClick={() => handleRegistro(nombre)}
-        >
-          Registrarse
-        </button>
-      </div>
+    <article className="evento-item" aria-labelledby={`evento-${id}`}>
+    <header className="evento-fecha-hora">
+
+      <time dateTime={fechaISO} className="evento-fecha">{fecha}</time>
+      <span className="evento-hora">{hora}</span>
+    </header>
+    
+    <div className="evento-info">
+      <h2 id={`evento-${id}`} className="evento-nombre">{nombre}</h2>
+      <p className="evento-descripcion">{descripcion}</p>
     </div>
+    
+    <div className="evento-registro">
+      <button 
+        className="btn-registro"
+        onClick={() => handleRegistro(nombre)}
+        aria-label={`Registrarse en el evento: ${nombre}`}
+      >
+        Registrarse
+      </button>
+    </div>
+  </article>
   );
 }
 
@@ -80,34 +82,33 @@ function ListaEventos() {
 
   useEffect(() => {
     const fetchEvents = async () => {
-      console.log("1. Inicando fetch");
+
       try {        
 
         const token = localStorage.getItem("token");
-        console.log("2. Token", token);
+
 
         const response = await fetch(`${API_URL}/api/events`, {
           headers: {
             'Authorization': `Bearer ${token}` 
           }
         });
-        console.log("3. response", response.status);
+
 
 
         //Si algo paso, me lanza un nuevo error
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const result = await response.json();
-        console.log("4. Resultado", result);
+
 
         setEvents(result.events || []); 
-        console.log("5. Eventos seteados", result.events);
+
 
       } catch (error) {
         console.log("CATCH - Error:", error.message, error);
         Swal.fire({ icon: "error", title: "Error", text: "No se pudieron cargar los eventos" });
       } finally {
-        console.log("6. Finally ejecutado");
         setLoading(false);
       }
     };

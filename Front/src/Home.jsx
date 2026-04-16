@@ -26,7 +26,7 @@ const handleRegistro = (nombreEvento) => {
 
 function ContenedorEvento({ fecha, nombre, descripcion, hora }) {
   return (
-    <div className="evento-item">
+    <main className="evento-item">
       <div className="evento-fecha-hora">
         <p className="evento-fecha">{fecha}</p>
         <p className="evento-hora">{hora}</p>
@@ -45,7 +45,7 @@ function ContenedorEvento({ fecha, nombre, descripcion, hora }) {
           Registrarse
         </button>
       </div>
-    </div>
+    </main>
   );
 }
 

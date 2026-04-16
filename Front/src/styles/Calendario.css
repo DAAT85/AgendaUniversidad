@@ -1,101 +1,55 @@
-.calendario-container {
-  width: 520px;
-  margin: 20px auto;
-  padding: 20px;
-  border: 2px solid #dcdcdc;
-  border-radius: 12px;
-  text-align: center;
-  background: white;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+.evento-item {
+  background: #ffffff;
+  border: 2px solid #2d5a24; /* Aumentado el grosor para mejor visibilidad */
+  border-radius: 10px;
+  padding: 1rem; /* Uso de rem para escalabilidad */
+  color: #1a3d17;
+  line-height: 1.5; /* Mejora la legibilidad del texto */
 }
 
-.controles {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
+.evento-fecha, 
+.evento-hora {
+  /* Evitamos tamaños menores a 0.9rem (aprox 14px) para lectura fácil */
+  font-size: 0.9rem; 
+  font-weight: 700;
+  color: #1a3d17; /* Color más oscuro para asegurar contraste AAA */
+  margin-bottom: 0.25rem;
+  display: block; /* Asegura que se comporten bien estructuralmente */
 }
 
-.controles button {
-  background: #28a745;
-  border: none;
-  color: white;
-  padding: 6px 10px;
+.evento-descripcion {
+  font-size: 1rem; /* Estándar recomendado para lectura */
+  color: #000000; /* Negro puro o casi puro para máximo contraste sobre blanco */
+  margin-bottom: 1rem;
+}
+
+.btn-registro {
+  background-color: #1a3d17;
+  color: #ffffff;
+  border: 2px solid transparent;
   border-radius: 6px;
-}
-
-.titulo {
-  font-size: 1.1rem;
-  font-weight: bold;
-}
-
-.vistas-btns button {
-  margin: 4px;
-  background: #28a745;
-  border: none;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 6px;
-}
-
-.mes-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-  margin-top: 10px;
-}
-
-.header-dia {
-  font-weight: bold;
-  color: #555;
-}
-
-.dia {
-  padding: 12px;
-  background: #f5f5f5;
-  border-radius: 6px;
+  padding: 10px 20px; /* Área de clic más grande (mínimo 44px de altura recomendado) */
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s;
+  display: inline-block;
+  text-decoration: none;
 }
 
-.dia:hover {
-  background: #e0e7ff;
+/* ESTADOS CRÍTICOS PARA ACCESIBILIDAD */
+
+.btn-registro:hover {
+  background-color: #2d6a27;
+  text-decoration: underline; /* Refuerzo visual que no depende solo del color */
 }
 
-.vacio {
-  background: transparent;
+/* Indicador de enfoque visible para navegación por teclado (indispensable) */
+.btn-registro:focus {
+  outline: 3px solid #ffbf47; /* Color de alto contraste para el foco */
+  outline-offset: 2px;
 }
 
-.vista-dia {
-  margin-top: 20px;
-}
-
-.semana-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-}
-
-.dia-semana {
-  background: #f3f4f6;
-  padding: 14px;
-  border-radius: 8px;
-}
-
-.ano-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-top: 15px;
-}
-
-.mes-cuadro {
-  background: #f5f5f5;
-  padding: 15px;
-  border-radius: 8px;
-  cursor: pointer;
-  text-transform: capitalize;
-}
-
-.mes-cuadro:hover {
-  background: #e0e7ff;
+.btn-registro:active {
+  transform: scale(0.98); /* Feedback táctil/visual */
 }
