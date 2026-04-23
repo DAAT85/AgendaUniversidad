@@ -40,31 +40,77 @@ function NavBar() {
 
 const openLoginModal = () => {
   Swal.fire({
-    title: `Inicio de Sesión`,
-    html: `
-      <style>
-        .swal2-container .swal2-content {
-          padding: 1rem 0;
-        }
-        .swal2-container input.swal2-input {
-          height: 40px;
-          margin: 10px 0;
-          font-size: 1rem;
-          padding: 0 10px;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-        }
-        .swal2-container input.swal2-input:focus {
-          border-color: #53A600;
-          box-shadow: 0 0 0 1px #53A600;
-        }
-      </style>
-      <div class="d-grid gap-2">
-        <input type="email" id="swal-input-email" class="swal2-input" placeholder="Correo electrónico">
-        <input type="password" id="swal-input-password" class="swal2-input" placeholder="Contraseña">
-        <button id="btn-login" class="btn btn-success mt-3">Iniciar Sesión</button>
+  title: `<span style="color: #1e4d1a; font-weight: bold;">Acceso al Sistema</span>`,
+  html: `
+    <style>
+      /* Contenedor principal */
+      .swal2-popup {
+        border-radius: 15px !important;
+        padding: 2rem !important;
+      }
+      /* Logo institucional */
+      .login-logo {
+        width: 80px;
+        margin-bottom: 15px;
+      }
+      /* Estilo de los inputs */
+      .swal2-container input.custom-input {
+        height: 45px;
+        width: 100%;
+        margin: 8px 0;
+        font-size: 0.95rem;
+        padding: 0 15px;
+        border: 1.5px solid #e0e0e0;
+        border-radius: 8px;
+        box-sizing: border-box;
+        transition: all 0.3s;
+      }
+      .swal2-container input.custom-input:focus {
+        border-color: #1e4d1a;
+        box-shadow: 0 0 0 2px rgba(30, 77, 26, 0.2);
+        outline: none;
+      }
+      /* Botón personalizado */
+      .btn-ucol {
+        background-color: #1e4d1a !important;
+        color: white !important;
+        border: none !important;
+        padding: 12px !important;
+        border-radius: 8px !important;
+        font-weight: bold !important;
+        width: 100%;
+        margin-top: 15px;
+        transition: background 0.3s;
+      }
+      .btn-ucol:hover {
+        background-color: #143512 !important;
+      }
+      .login-footer {
+        font-size: 0.8rem;
+        color: #666;
+        margin-top: 15px;
+      }
+    </style>
+
+    <div class="text-center">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/7/7d/Logo_de_la_Universidad_de_Colima.svg" class="login-logo" alt="Ucol Logo">
+      <p style="color: #666; margin-bottom: 20px;">Dirección General de Recursos Educativos</p>
+      
+      <div class="text-start">
+        <label style="font-size: 0.8rem; color: #1e4d1a; font-weight: 600; margin-left: 5px;">Correo Universitario</label>
+        <input type="email" id="swal-input-email" class="custom-input" placeholder="ejemplo@ucol.mx">
+        
+        <label style="font-size: 0.8rem; color: #1e4d1a; font-weight: 600; margin-left: 5px; margin-top: 10px; display: block;">Contraseña</label>
+        <input type="password" id="swal-input-password" class="custom-input" placeholder="••••••••">
       </div>
-    `,
+      
+      <button id="btn-login-custom" class="btn-ucol">INGRESAR</button>
+      
+      <div class="login-footer">
+        © Universidad de Colima
+      </div>
+    </div>
+  `,
     showConfirmButton: false,
     didOpen: () => {
       const btnLogin = document.getElementById('btn-login');
@@ -137,7 +183,7 @@ const openLoginModal = () => {
     <header
       style={{
         background: "#fff",
-        borderBottom: "4px solid #c8a951",
+        borderBottom: "4px solid #1e4d1a",
         boxShadow: "0 2px 10px rgba(0,0,0,0.08)"
       }}
     >
@@ -174,8 +220,8 @@ const openLoginModal = () => {
         to="/Calendario"
         className="text-decoration-none fw-semibold"
         style={{ color: "#2d6a27", fontSize: "0.85rem", letterSpacing: "1px" }}
-        onMouseEnter={e => e.target.style.color = "#c8a951"}
-        onMouseLeave={e => e.target.style.color = "#2d6a27"}
+        onMouseEnter={e => e.target.style.color = "#2d6a27"}
+        onMouseLeave={e => e.target.style.color = "#0b0b0b"}
       >
         CALENDARIO
       </Link>
@@ -183,8 +229,8 @@ const openLoginModal = () => {
         to="/Quejas"
         className="text-decoration-none fw-semibold"
         style={{ color: "#2d6a27", fontSize: "0.85rem", letterSpacing: "1px" }}
-        onMouseEnter={e => e.target.style.color = "#c8a951"}
-        onMouseLeave={e => e.target.style.color = "#2d6a27"}
+        onMouseEnter={e => e.target.style.color = "#2d6a27"}
+        onMouseLeave={e => e.target.style.color = "#0b0b0b"}
       >
         QUEJAS Y SUGERENCIAS
       </Link>

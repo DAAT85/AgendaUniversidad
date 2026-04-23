@@ -7,6 +7,7 @@ import Calendario from "./components/Calendario";
 import Admin from './pages/Admin';
 import ModeracionAdmin from './pages/ModeracionAdmin';
 import ProtectedRoute from './components/ProtectedRoute.jsx'; 
+import Calendarioy from "./components/Calendarioy";
 
 function App() {
   return (
@@ -34,7 +35,7 @@ function App() {
         }/>
 
         <Route path="/Calendario" element={
-          <Calendario />
+          <Calendarioy />
         }/>
 
         <Route path="/admin" element={
