@@ -8,6 +8,7 @@ import Admin from './pages/Admin';
 import ModeracionAdmin from './pages/ModeracionAdmin';
 import ProtectedRoute from './components/ProtectedRoute.jsx'; 
 import Calendarioy from "./components/Calendarioy";
+import Escenarios from './components/Escenarios.jsx';
 
 function App() {
   return (
@@ -20,9 +21,7 @@ function App() {
           path="/" 
           element={
             <>
-              <div className="container bg-light p-5 mt-4 rounded shadow-sm text-center" style={{ maxWidth: '600px' }}>
-                <h1 className="text-success fw-bold mb-4">Calendarios de Eventos</h1>
-              </div>
+              
               <Calendario />
               <Home />
             </>
@@ -33,7 +32,7 @@ function App() {
         <Route path="/Quejas" element={
           <Quejas />
         }/>
-
+        <Route path="/Escenarios" element={<Escenarios />} />
         <Route path="/Calendario" element={
           <Calendarioy />
         }/>

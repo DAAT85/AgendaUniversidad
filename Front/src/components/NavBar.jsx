@@ -40,7 +40,7 @@ function NavBar() {
 
 const openLoginModal = () => {
   Swal.fire({
-  title: `<span style="color: #1e4d1a; font-weight: bold;">Acceso al Sistema</span>`,
+  title: `<span style="color: #CCDB94; font-weight: bold;">Acceso al Sistema</span>`,
   html: `
     <style>
       /* Contenedor principal */
@@ -66,13 +66,13 @@ const openLoginModal = () => {
         transition: all 0.3s;
       }
       .swal2-container input.custom-input:focus {
-        border-color: #1e4d1a;
+        border-color: #CCDB94;
         box-shadow: 0 0 0 2px rgba(30, 77, 26, 0.2);
         outline: none;
       }
       /* Botón personalizado */
       .btn-ucol {
-        background-color: #1e4d1a !important;
+        background-color: #CCDB94 !important;
         color: white !important;
         border: none !important;
         padding: 12px !important;
@@ -97,14 +97,14 @@ const openLoginModal = () => {
       <p style="color: #666; margin-bottom: 20px;">Dirección General de Recursos Educativos</p>
       
       <div class="text-start">
-        <label style="font-size: 0.8rem; color: #1e4d1a; font-weight: 600; margin-left: 5px;">Correo Universitario</label>
+        <label style="font-size: 0.8rem; color: #CCDB94; font-weight: 600; margin-left: 5px;">Correo Universitario</label>
         <input type="email" id="swal-input-email" class="custom-input" placeholder="ejemplo@ucol.mx">
         
-        <label style="font-size: 0.8rem; color: #1e4d1a; font-weight: 600; margin-left: 5px; margin-top: 10px; display: block;">Contraseña</label>
+        <label style="font-size: 0.8rem; color: #CCDB94; font-weight: 600; margin-left: 5px; margin-top: 10px; display: block;">Contraseña</label>
         <input type="password" id="swal-input-password" class="custom-input" placeholder="••••••••">
       </div>
       
-      <button id="btn-login-custom" class="btn-ucol">INGRESAR</button>
+      <button id="btn-login" class="btn-ucol">INGRESAR</button>
       
       <div class="login-footer">
         © Universidad de Colima
@@ -148,7 +148,7 @@ const openLoginModal = () => {
               icon: 'success',
               title: '¡Bienvenido!',
               text: `Hola ${result.user?.name || result.admin?.name || result.name}`,
-              confirmButtonColor: '#53A600'
+              confirmButtonColor: '#C8D98E'
             }).then(()=>{
               navigate("/admin");
             })
@@ -161,7 +161,7 @@ const openLoginModal = () => {
               icon: 'error',
               title: 'Error',
               text: result.error || 'Credenciales incorrectas',
-              confirmButtonColor: '#53A600'
+              confirmButtonColor: '#C8D98E'
             });
           }
 
@@ -171,7 +171,7 @@ const openLoginModal = () => {
             icon: 'error',
             title: 'Error de conexión',
             text: 'No se pudo conectar con el servidor',
-            confirmButtonColor: '#53A600'
+            confirmButtonColor: '#C8D98E'
           });
         }
       });
@@ -183,7 +183,7 @@ const openLoginModal = () => {
     <header
       style={{
         background: "#fff",
-        borderBottom: "4px solid #1e4d1a",
+        borderBottom: "4px solid #C8D98E",
         boxShadow: "0 2px 10px rgba(0,0,0,0.08)"
       }}
     >
@@ -201,7 +201,7 @@ const openLoginModal = () => {
       <div>
         <h1
           className="mb-0 fw-bold"
-          style={{ color: "#1e4d1a", fontSize: "1rem", letterSpacing: "0.5px" }}
+          style={{ color: "#0b0f0b", fontSize: "1rem", letterSpacing: "0.5px" }}
         >
           Universidad de Colima
         </h1>
@@ -219,18 +219,28 @@ const openLoginModal = () => {
       <Link
         to="/Calendario"
         className="text-decoration-none fw-semibold"
-        style={{ color: "#2d6a27", fontSize: "0.85rem", letterSpacing: "1px" }}
+        style={{ color: "#C8D98E", fontSize: "0.85rem", letterSpacing: "1px" }}
         onMouseEnter={e => e.target.style.color = "#2d6a27"}
-        onMouseLeave={e => e.target.style.color = "#0b0b0b"}
+        onMouseLeave={e => e.target.style.color = "#C8D98E"}
       >
         CALENDARIO
       </Link>
+
+      <Link
+        to="/Escenarios"
+        className="text-decoration-none fw-semibold"
+        style={{ color: "#C8D98E", fontSize: "0.85rem", letterSpacing: "1px" }}
+        onMouseEnter={e => e.target.style.color = "#2d6a27"}
+        onMouseLeave={e => e.target.style.color = "#C8D98E"}
+        >
+        ESCENARIOS
+        </Link>
       <Link
         to="/Quejas"
         className="text-decoration-none fw-semibold"
-        style={{ color: "#2d6a27", fontSize: "0.85rem", letterSpacing: "1px" }}
+        style={{ color: "#C8D98E", fontSize: "0.85rem", letterSpacing: "1px" }}
         onMouseEnter={e => e.target.style.color = "#2d6a27"}
-        onMouseLeave={e => e.target.style.color = "#0b0b0b"}
+        onMouseLeave={e => e.target.style.color = "#C8D98E"}
       >
         QUEJAS Y SUGERENCIAS
       </Link>
@@ -241,19 +251,19 @@ const openLoginModal = () => {
       onClick={openModal}
       className="btn btn-sm fw-semibold"
       style={{
-        background: activo ? "transparent" : "#2d6a27",
+        background: activo ? "transparent" : "#C8D98E",
         color: activo ? "#e74a3b" : "#fff",
-        border: activo ? "2px solid #e74a3b" : "2px solid #2d6a27",
+        border: activo ? "2px solid #e74a3b" : "2px solid #C8D98E",
         borderRadius: "20px",
         padding: "0.4rem 1.2rem",
         transition: "all 0.2s"
       }}
       onMouseEnter={e => {
-        e.currentTarget.style.background = activo ? "#e74a3b" : "#1e4d1a";
+        e.currentTarget.style.background = activo ? "#e74a3b" : "#C8D98E";
         e.currentTarget.style.color = "#fff";
       }}
       onMouseLeave={e => {
-        e.currentTarget.style.background = activo ? "transparent" : "#2d6a27";
+        e.currentTarget.style.background = activo ? "transparent" : "#C8D98E";
         e.currentTarget.style.color = activo ? "#e74a3b" : "#fff";
       }}
     >
