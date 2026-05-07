@@ -35,7 +35,11 @@ model Events {
   date        String
   time        String
   description String
-  state       String    //Solicitado, Rechazado y Autorizado
-  type        String   //Examen, taller, Curso
+
+  state       String   // ← sede o escenario
+  status      String   @default("pendiente") // ← aprobado/rechazado/pendiente
+
+  type        String
+  dependence  String?
   createdAt   DateTime @default(now())
 }

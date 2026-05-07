@@ -1,116 +1,210 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import Swal from 'sweetalert2';
 
-//?Solo se va a mostrar, con cierto inicio de sesion
-//Se simula el usuario logueado (Moderador asignado al CIAM)
-const usuarioLogueado = {
-    nombre: "Moderador 1",
-    rol: "Moderador",
-    sedeAsignada: "CIAM Colima" 
-};
-
-//Datos de ejemplo con fechas de solicitud y ubicaciones
-const mockSolicitudes = [
-    { id: 101, titulo: "Congreso Médico", lugar: "CIAM Colima", fechaEvento: "2024-06-15", hora: "09:00", solicitadoEn: "2024-05-01 10:00", estado: "pendiente" },
-    { id: 102, titulo: "Taller de Yoga", lugar: "CIAM Colima", fechaEvento: "2024-06-15", hora: "09:00", solicitadoEn: "2024-05-01 11:30", estado: "pendiente" }, // Conflicto con el 101
-    { id: 103, titulo: "Charla Tech", lugar: "Polideportivo", fechaEvento: "2024-06-15", hora: "10:00", solicitadoEn: "2024-05-02 09:00", estado: "pendiente" },
-];
+const API_URL = "http://localhost:3000/api";
 
 function ModeracionAdmin() {
-    const [eventos, setEventos] = useState(mockSolicitudes);
+    const [eventos, setEventos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [currentUser, setCurrentUser] = useState({
+        nombre: "",
+        rol: "",
+        sedeAsignada: ""
+    });
+    const [errorMessage, setErrorMessage] = useState('');
 
-    //Fetch para filtrar los eventos, segun a donde pertenezca
-    useEffect(() => {
-    const fetchModeratorEvents = async () => {
-        // Obtenemos el ID del usuario que guardamos al loguearnos
-        const userId = localStorage.getItem("userId"); 
+    // Obtener eventos pendientes para el moderador
+    const fetchModeratorEvents = useCallback(async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_URL}/moderator/events`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
 
-        const response = await fetch('http://localhost:3000/moderator/events', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'user-id': userId //  Aquí le decimos al server quién es el moderador, despues implementar JWT
+            if (response.status === 403) {
+                setErrorMessage("No tienes permisos de moderador.");
+                setEventos([]);
+                return;
             }
+
+            const data = await response.json();
+            // Filtramos por si acaso el backend enviara algo que no sea 'pendiente'
+            const pendientes = (data.events || []).filter(ev => ev.state === 'pendiente');
+            setEventos(pendientes);
+            setErrorMessage('');
+        } catch (error) {
+            setErrorMessage('Error al cargar la moderación');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    const fetchCurrentUser = useCallback(async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_URL}/me`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setCurrentUser({
+                    nombre: data.name,
+                    rol: data.role,
+                    sedeAsignada: data.dependence
+                });
+            }
+        } catch (error) {
+            console.error('Error user:', error);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchCurrentUser();
+        fetchModeratorEvents();
+    }, [fetchCurrentUser, fetchModeratorEvents]);
+
+    // ESTA ES LA FUNCIÓN CLAVE CORREGIDA
+    const handleDecision = async (id, nuevoEstado) => {
+        const accion = nuevoEstado === 'aprobado' ? 'Aprobar' : 'Rechazar';
+        
+        // Confirmación antes de proceder
+        const confirm = await Swal.fire({
+            title: `¿${accion} evento?`,
+            text: `Vas a marcar este evento como ${nuevoEstado}`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: nuevoEstado === 'aprobado' ? '#2d6a27' : '#d33',
+            confirmButtonText: `Sí, ${nuevoEstado}`
         });
-        const data = await response.json();
-        setEventos(data.events);
+
+        if (!confirm.isConfirmed) return;
+
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_URL}/events/${id}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ state: nuevoEstado })
+            });
+
+            if (!response.ok) throw new Error("Error al actualizar");
+
+            // ELIMINAR DE LA LISTA: Independientemente de si es aprobado o rechazado,
+            // ya no es una "solicitud pendiente", por lo que se quita del estado local.
+            setEventos(prev => prev.filter(ev => ev.id !== id));
+
+            Swal.fire({
+                icon: 'success',
+                title: nuevoEstado === 'aprobado' ? 'Evento Aprobado' : 'Evento Rechazado',
+                text: `El evento ha sido ${nuevoEstado} y quitado de tu lista.`,
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } catch (error) {
+            Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
+        }
     };
 
-    fetchModeratorEvents();
-}, []);
-
-    const eventosFiltrados = eventos.filter(ev => ev.lugar === usuarioLogueado.sedeAsignada);
-
-    const handleDecision = (id, nuevoEstado) => {
-        setEventos(eventos.map(ev => ev.id === id ? { ...ev, estado: nuevoEstado } : ev));
-        alert(`Evento ${nuevoEstado === 'aprobado' ? 'Aprobado' : 'Rechazado'}`);
+    const createTestEvent = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            await fetch(`${API_URL}/events`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    name: 'Evento de Prueba Moderación',
+                    date: '2026-06-15',
+                    time: '12:00',
+                    state: 'pendiente',
+                    type: 'Taller',
+                    description: 'Prueba de flujo de moderador.',
+                    dependence: currentUser.sedeAsignada
+                })
+            });
+            fetchModeratorEvents();
+        } catch (e) { console.log(e); }
     };
+
+    if (loading) return <div className="p-5 text-center">Cargando solicitudes...</div>;
 
     return (
-    <div style={{ padding: "2rem" }}>
-        <div className="alert alert-info">
-            <strong>Moderador:</strong> {usuarioLogueado.nombre} | <strong>Sede:</strong> {usuarioLogueado.sedeAsignada}
-        </div>
+        <div style={{ padding: "2rem", background: "#f8f9fa", minHeight: "100vh" }}>
+            <div className="alert shadow-sm" style={{ background: "#fff", borderLeft: "5px solid #2d6a27" }}>
+                <strong>Moderador:</strong> {currentUser.nombre} | <strong>Sede:</strong> {currentUser.sedeAsignada}
+            </div>
 
-        <h3>Solicitudes Pendientes</h3>
-        <p className="text-muted">Revisa quién solicitó primero para resolver conflictos de horario.</p>
-
-        <table className="table table-hover align-middle">
-            <thead className="table-dark">
-            <tr>
-                <th>Evento</th>
-                <th>Fecha Evento</th>
-                <th>Hora</th>
-                <th>Solicitado el (Prioridad)</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-        {eventosFiltrados.map((ev, index) => {
-            // Lógica simple para resaltar posibles conflictos de horario
-            const tieneConflicto = eventosFiltrados.some(
-                other => other.id !== ev.id && other.fechaEvento === ev.fechaEvento && other.hora === ev.hora
-            );
-
-            return (
-                <tr key={ev.id} style={{ borderLeft: tieneConflicto ? "5px solid #dc3545" : "5px solid #198754" }}>
-                    <td>
-                        <strong>{ev.titulo}</strong>
-                        {tieneConflicto && <span className="badge bg-danger ms-2">Conflicto de Horario</span>}
-                    </td>
-                    <td>{ev.fechaEvento}</td>
-                    <td>{ev.hora}</td>
-                    <td className="small text-muted">{ev.solicitadoEn}</td>
-                    <td>
-                        <span className={`badge ${ev.estado === 'pendiente' ? 'bg-warning' : ev.estado === 'aprobado' ? 'bg-success' : 'bg-danger'}`}>
-                            {ev.estado.toUpperCase()}
-                        </span>
-                    </td>
-                    <td>
-                    <div className="btn-group btn-group-sm">
-                    <button 
-                        className="btn btn-success" 
-                        onClick={() => handleDecision(ev.id, 'aprobado')}
-                        disabled={ev.estado !== 'pendiente'}
-                    >
-                        Aprobar
-                    </button>
-                    <button 
-                        className="btn btn-danger" 
-                        onClick={() => handleDecision(ev.id, 'rechazado')}
-                        disabled={ev.estado !== 'pendiente'}
-                    >
-                        Rechazar
-                    </button>
+            <div className="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h2 style={{ color: "#2d6a27", fontWeight: "700" }}>Panel de Moderación</h2>
+                    <p className="text-muted">Gestiona las solicitudes de tu dependencia.</p>
                 </div>
-                </td>
-                </tr>
-            );
-            })}
-        </tbody>
-    </table>
-    </div>
-);
+                <button className="btn btn-success shadow-sm" onClick={createTestEvent}>
+                    + Crear Prueba
+                </button>
+            </div>
+
+            <div className="card shadow-sm border-0">
+                <div className="table-responsive">
+                    <table className="table table-hover mb-0">
+                        <thead style={{ background: "#2d6a27", color: "#fff" }}>
+                            <tr>
+                                <th>Evento</th>
+                                <th>Fecha</th>
+                                <th>Hora</th>
+                                <th className="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {eventos.length === 0 ? (
+                                <tr><td colSpan="4" className="text-center py-4 text-muted">No hay solicitudes pendientes por ahora.</td></tr>
+                            ) : (
+                                eventos.map((ev) => (
+                                    <tr key={ev.id}>
+                                        <td>
+                                            <div className="fw-bold">{ev.name}</div>
+                                            <small className="text-muted">{ev.type}</small>
+                                        </td>
+                                        <td>{ev.date}</td>
+                                        <td>{ev.time} h</td>
+                                        <td className="text-center">
+                                            <div className="btn-group">
+                                                <button 
+                                                    className="btn btn-outline-success btn-sm" 
+                                                    onClick={() => handleDecision(ev.id, 'aprobado')}
+                                                >
+                                                    Aprobar
+                                                </button>
+                                                <button 
+                                                    className="btn btn-outline-danger btn-sm" 
+                                                    onClick={() => handleDecision(ev.id, 'rechazado')}
+                                                >
+                                                    Rechazar
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    );
 }
 
 export default ModeracionAdmin;

@@ -1,9 +1,7 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 
 const escenarios = [
-    "Todos",
     "Aula DGRE",
     "CIAM Colima 1",
     "CIAM Villa de Álvarez",
@@ -18,364 +16,193 @@ const tipos = ["Conferencia", "Taller", "Curso", "Cultural", "Deportivo", "Otro"
 
 function EventosAdmin() {
     const [events, setEvents] = useState([]);
+    const API_URL = "http://localhost:3000/api/events";
 
+    // Cargar eventos al iniciar
     useEffect(() => {
-        const fetchEvents = async () => {
-            try {
-                const token = localStorage.getItem("token");
-                const response = await fetch("http://localhost:3000/api/events", {
-                    headers: {
-                        // ✅ FIX 1: Corregido typo (había espacios al inicio '   Authorization')
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                const result = await response.json();
-                // ✅ FIX 2: Maneja cualquier estructura de respuesta sin crashear
-                const data = result.events ?? result.data ?? result;
-                setEvents(Array.isArray(data) ? data : []);
-            } catch (error) {
-                console.log("Error", error);
-                Swal.fire({ icon: "error", title: "Error", text: "No se pudieron cargar los eventos" });
-            }
-        };
         fetchEvents();
     }, []);
+
+    const fetchEvents = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(API_URL, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const result = await response.json();
+            
+            // Ajuste para manejar diferentes estructuras de respuesta
+            const data = result.events || result.data || result;
+            setEvents(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error("Error al cargar:", error);
+            Swal.fire({ icon: "error", title: "Error", text: "No se pudieron cargar los eventos" });
+        }
+    };
 
     const openModal = (event = null, index = null) => {
         Swal.fire({
             title: event ? "Actualizar evento" : "Crear evento",
             html: `
-            <input 
-            id="input-name" 
-            class="swal2-input custom-input" 
-            placeholder="Nombre del evento"
-            value="${event ? event.name : ""}"
-            >
-    
-        <select id="input-escenario" class="swal2-select custom-input">
-            ${escenarios
-                .map(
-                    (e) =>
-                        `<option value="${e}" ${event && event.state === e ? "selected" : ""
-                        }>${e}</option>`
-                )
-                .join("")}
-        </select>
-    
-        <select id="input-type" class="swal2-select custom-input">
-            ${tipos
-                .map(
-                    (t) =>
-                        `<option value="${t}" ${event && event.type === t ? "selected" : ""
-                        }>${t}</option>`
-                )
-                .join("")}
-        </select>
-    
-        <input 
-            id="input-date" 
-            type="date" 
-            class="swal2-input custom-input"
-            value="${event ? event.date : ""}"
-        >
-    
-        <input 
-            id="input-time" 
-            type="time" 
-            class="swal2-input custom-input"
-            value="${event ? event.time : ""}"
-        >
-    
-        <textarea 
-            id="input-desc" 
-            class="swal2-textarea custom-input" 
-            placeholder="Descripción del evento"
-        >${event ? event.description : ""}</textarea>
-        `,
+            <div style="display: flex; flex-direction: column; gap: 10px; text-align: left;">
+                <label style="font-weight: bold; color: #2d6a27;">Nombre</label>
+                <input id="input-name" class="swal2-input" style="margin: 0; width: 100%;" value="${event ? event.name : ""}">
+                
+                <label style="font-weight: bold; color: #2d6a27;">Sede (Dependencia)</label>
+                <select id="input-dependence" class="swal2-select" style="margin: 0; width: 100%;">
+                    ${escenarios.map(e => `<option value="${e}" ${event && event.dependence === e ? "selected" : ""}>${e}</option>`).join("")}
+                </select>
+                
+                <label style="font-weight: bold; color: #2d6a27;">Tipo</label>
+                <select id="input-type" class="swal2-select" style="margin: 0; width: 100%;">
+                    ${tipos.map(t => `<option value="${t}" ${event && event.type === t ? "selected" : ""}>${t}</option>`).join("")}
+                </select>
+                
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label style="font-weight: bold; color: #2d6a27;">Fecha</label>
+                        <input id="input-date" type="date" class="swal2-input" style="margin: 0; width: 100%;" value="${event ? event.date : ""}">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-weight: bold; color: #2d6a27;">Hora</label>
+                        <input id="input-time" type="time" class="swal2-input" style="margin: 0; width: 100%;" value="${event ? event.time : ""}">
+                    </div>
+                </div>
+                
+                <label style="font-weight: bold; color: #2d6a27;">Descripción</label>
+                <textarea id="input-desc" class="swal2-textarea" style="margin: 0; width: 100%;">${event ? event.description : ""}</textarea>
+            </div>
+            `,
             background: "#f0fdf4",
-            confirmButtonText: "Guardar ",
-            cancelButtonText: "Cancelar",
+            confirmButtonText: "Guardar",
             showCancelButton: true,
             confirmButtonColor: "#16a34a",
-            cancelButtonColor: "#6b7280",
-            customClass: {
-                popup: "green-modal",
-                title: "green-title"
-            },
-
             preConfirm: () => {
-                const newEvent = {
+                const formData = {
                     name: document.getElementById("input-name").value,
-                    state: document.getElementById("input-escenario").value,
+                    dependence: document.getElementById("input-dependence").value,
                     type: document.getElementById("input-type").value,
                     date: document.getElementById("input-date").value,
                     time: document.getElementById("input-time").value,
                     description: document.getElementById("input-desc").value,
                 };
 
-                if (!newEvent.name || !newEvent.date || !newEvent.time || !newEvent.description) {
-                    Swal.showValidationMessage("Todos los campos son obligatorios.");
+                if (!formData.name || !formData.date || !formData.time) {
+                    Swal.showValidationMessage("Nombre, fecha y hora son obligatorios.");
                     return false;
                 }
-
-                const [hours, minutes] = newEvent.time.split(":").map(Number);
-                const newTimeInMinutes = hours * 60 + minutes;
-
-                const conflict = events.some((ev, i) => {
-                    if (event && i === index) return false;
-
-                    if (ev.state === newEvent.state && ev.date === newEvent.date) {
-                        const [h, m] = ev.time.split(":").map(Number);
-                        const existingTime = h * 60 + m;
-                        const difference = Math.abs(existingTime - newTimeInMinutes);
-                        return difference < 60;
-                    }
-
-                    return false;
-                });
-
-                if (conflict) {
-                    Swal.showValidationMessage("Ya existe un evento en ese escenario en ese horario");
-                    return false;
-                }
-
-                return newEvent;
+                return formData;
             }
         }).then(async (result) => {
             if (result.isConfirmed) {
+                const token = localStorage.getItem("token");
+                const method = event ? "PUT" : "POST";
+                const url = event ? `${API_URL}/${event.id}` : API_URL;
 
-                // Fetch para actualizar un evento
-                if (event) {
-                    try {
-                        const token = localStorage.getItem("token");
-                        const response = await fetch(`http://localhost:3000/api/events/${event.id}`, {
-                            method: "PUT",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "Authorization": `Bearer ${token}`
-                            },
-                            body: JSON.stringify(result.value)
-                        });
-                        const data = await response.json();
-                        // ✅ FIX 3: Acepta data.event o data directamente
-                        const updatedEvent = data.event ?? data;
-                        const updatedEvents = [...events];
-                        updatedEvents[index] = updatedEvent;
-                        setEvents(updatedEvents);
-                        Swal.fire({ icon: "success", title: "Evento actualizado", timer: 1500, showConfirmButton: false });
-                    } catch (error) {
-                        Swal.fire({ icon: "error", title: "Error", text: "No se pudo actualizar el evento" });
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 
+                            "Content-Type": "application/json", 
+                            "Authorization": `Bearer ${token}` 
+                        },
+                        body: JSON.stringify(result.value)
+                    });
+
+                    if (!response.ok) throw new Error("Fallo en la petición");
+
+                    const savedEvent = await response.json();
+                    
+                    // Actualizar estado local para evitar refrescar manualmente
+                    if (event) {
+                        const updatedList = [...events];
+                        updatedList[index] = savedEvent;
+                        setEvents(updatedList);
+                    } else {
+                        setEvents(prev => [savedEvent, ...prev]);
                     }
 
-                // Fetch para crear un evento
-                } else {
-                    try {
-                        const token = localStorage.getItem("token");
-                        const response = await fetch("http://localhost:3000/api/events", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "Authorization": `Bearer ${token}`
-                            },
-                            body: JSON.stringify(result.value)
-                        });
-                        const data = await response.json();
-                        // ✅ FIX 4: Acepta data.event o data directamente, regresa a la página correctamente
-                        const newEvent = data.event ?? data;
-                        if (newEvent && (newEvent.id || newEvent.name)) {
-                            setEvents(prev => [...prev, newEvent]);
-                        }
-                        Swal.fire({ icon: "success", title: "Evento creado", timer: 1500, showConfirmButton: false });
-                    } catch (error) {
-                        Swal.fire({ icon: "error", title: "Error", text: "No se pudo crear el evento" });
-                    }
+                    Swal.fire({ icon: "success", title: "Guardado", timer: 1500, showConfirmButton: false });
+                } catch (error) {
+                    Swal.fire({ icon: "error", title: "Error", text: "No se pudo procesar la solicitud" });
                 }
             }
         });
     };
 
-    const deleteEvent = (index) => {
+    const deleteEvent = (id, index) => {
         Swal.fire({
             title: "¿Eliminar evento?",
             text: "Esta acción no se puede deshacer",
             icon: "warning",
             showCancelButton: true,
             confirmButtonText: "Eliminar",
-            cancelButtonText: "Cancelar"
+            confirmButtonColor: "#e74a3b",
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
                     const token = localStorage.getItem("token");
-                    const eventToDelete = events[index];
-                    await fetch(`http://localhost:3000/api/events/${eventToDelete.id}`, {
+                    const response = await fetch(`${API_URL}/${id}`, {
                         method: "DELETE",
-                        headers: {
-                            "Authorization": `Bearer ${token}`
-                        }
+                        headers: { "Authorization": `Bearer ${token}` }
                     });
-                    setEvents(events.filter((_, i) => i !== index));
-                    Swal.fire({ icon: "success", title: "Evento eliminado", timer: 1500, showConfirmButton: false });
+
+                    if (response.ok) {
+                        setEvents(events.filter((_, i) => i !== index));
+                        Swal.fire({ icon: "success", title: "Eliminado", timer: 1500, showConfirmButton: false });
+                    }
                 } catch (error) {
-                    Swal.fire({ icon: "error", title: "Error", text: "No se pudo eliminar el evento" });
+                    Swal.fire({ icon: "error", title: "Error", text: "No se pudo eliminar" });
                 }
             }
         });
     };
 
     return (
-        <>
-            <div className="d-flex justify-content-center align-items-center gap-2 my-3">
+        <div style={{ background: "#f0f7ee", minHeight: "100vh" }}>
+            <div className="d-flex justify-content-center align-items-center gap-3 py-4">
                 <button
                     onClick={() => openModal()}
                     style={{
-                        fontSize: "1.5rem",
-                        width: "55px",
-                        height: "55px",
-                        borderRadius: "50%",
-                        border: "3px solid #c8a951",
-                        background: "#2d6a27",
-                        color: "#c8a951",
-                        cursor: "pointer",
-                        boxShadow: "0 6px 15px rgba(45,106,39,0.35)",
-                        transition: "all 0.2s"
+                        fontSize: "2rem", width: "60px", height: "60px", borderRadius: "50%",
+                        border: "none", background: "#2d6a27", color: "#fff", cursor: "pointer",
+                        display: "flex", alignItems: "center", justifyContent: "center"
                     }}
-                    onMouseEnter={e => e.target.style.background = "#1e4d1a"}
-                    onMouseLeave={e => e.target.style.background = "#2d6a27"}
-                >
-                    +
-                </button>
-                <span style={{ color: "#2d6a27", fontWeight: "600", fontSize: "0.9rem" }}>
-                    Nuevo evento
-                </span>
+                > + </button>
+                <h2 style={{ color: "#2d6a27", margin: 0, fontWeight: "700" }}>Gestión de Eventos</h2>
             </div>
 
-            <main
-                style={{
-                    padding: "2rem",
-                    display: "grid",
-                    gap: "1.5rem",
-                    background: "#f0f7ee",
-                    minHeight: "80vh"
-                }}
-            >
-                {events.length === 0 && (
-                    <p style={{ textAlign: "center", color: "#6c757d" }}>
-                        No hay eventos creados
-                    </p>
+            <main style={{
+                padding: "2rem", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
+                gap: "1.5rem", maxWidth: "1200px", margin: "0 auto"
+            }}>
+                {events.length === 0 ? (
+                    <p style={{ gridColumn: "1/-1", textAlign: "center", color: "#6c757d" }}>No hay eventos registrados.</p>
+                ) : (
+                    events.map((event, index) => (
+                        <div key={event.id || index} style={{
+                            background: "#fff", padding: "1.5rem", borderRadius: "16px",
+                            borderLeft: "6px solid #2d6a27", boxShadow: "0 10px 25px rgba(0,0,0,0.05)"
+                        }}>
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                <h3 style={{ color: "#1e4d1a" }}>{event.name}</h3>
+                                <span style={{ background: "#e8f5e9", color: "#2d6a27", padding: "4px 10px", borderRadius: "8px", fontSize: "0.8rem" }}>
+                                    {event.state?.toUpperCase() || 'PENDIENTE'}
+                                </span>
+                            </div>
+                            <p><strong>📍 Sede:</strong> {event.dependence}</p>
+                            <p><strong>📅 Fecha:</strong> {event.date}</p>
+                            <p><strong>⏰ Hora:</strong> {event.time}</p>
+                            
+                            <div style={{ display: "flex", gap: "10px", marginTop: "1rem" }}>
+                                <button onClick={() => openModal(event, index)} style={{ flex: 1, padding: "8px", borderRadius: "8px", border: "1px solid #2d6a27", background: "none", color: "#2d6a27", cursor: "pointer" }}>Editar</button>
+                                <button onClick={() => deleteEvent(event.id, index)} style={{ flex: 1, padding: "8px", borderRadius: "8px", border: "1px solid #e74a3b", background: "none", color: "#e74a3b", cursor: "pointer" }}>Eliminar</button>
+                            </div>
+                        </div>
+                    ))
                 )}
-
-                {events.map((event, index) => (
-                    <div
-                        key={event.id ?? index}
-                        style={{
-                            background: "#ffffff",
-                            padding: "1.5rem",
-                            borderRadius: "16px",
-                            borderLeft: "5px solid #2d6a27",
-                            boxShadow: "0 8px 20px rgba(0,0,0,0.07)",
-                            transition: "transform 0.2s ease"
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.transform = "translateY(-3px)"}
-                        onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
-                    >
-                        <h3 style={{ marginTop: 0, color: "#1e4d1a" }}>{event.name}</h3>
-
-                        <div style={{ marginBottom: "0.8rem" }}>
-                            <span
-                                style={{
-                                    display: "inline-block",
-                                    background: "#c8a951",
-                                    color: "#fff",
-                                    padding: "0.3rem 0.8rem",
-                                    borderRadius: "20px",
-                                    fontSize: "0.8rem",
-                                    marginRight: "0.5rem",
-                                    fontWeight: "600"
-                                }}
-                            >
-                                {event.state}
-                            </span>
-
-                            <span
-                                style={{
-                                    display: "inline-block",
-                                    background: "#2d6a27",
-                                    color: "#fff",
-                                    padding: "0.3rem 0.8rem",
-                                    borderRadius: "20px",
-                                    fontSize: "0.8rem",
-                                    fontWeight: "600"
-                                }}
-                            >
-                                {event.type}
-                            </span>
-                        </div>
-
-                        <p><strong style={{ color: "#2d6a27" }}>Fecha:</strong> {event.date}</p>
-                        <p><strong style={{ color: "#2d6a27" }}>Hora:</strong> {event.time}</p>
-                        <p style={{ color: "#555" }}>{event.description}</p>
-
-                        <div style={{ display: "flex", gap: "0.8rem", marginTop: "1rem" }}>
-                            <button
-                                onClick={() => openModal(event, index)}
-                                style={{
-                                    flex: 1,
-                                    padding: "0.5rem",
-                                    borderRadius: "10px",
-                                    border: "2px solid #2d6a27",
-                                    background: "transparent",
-                                    color: "#2d6a27",
-                                    cursor: "pointer",
-                                    fontWeight: "600",
-                                    transition: "all 0.2s"
-                                }}
-                                onMouseEnter={e => {
-                                    e.target.style.background = "#2d6a27";
-                                    e.target.style.color = "#fff";
-                                }}
-                                onMouseLeave={e => {
-                                    e.target.style.background = "transparent";
-                                    e.target.style.color = "#2d6a27";
-                                }}
-                            >
-                                Editar
-                            </button>
-
-                            <button
-                                onClick={() => deleteEvent(index)}
-                                style={{
-                                    flex: 1,
-                                    padding: "0.5rem",
-                                    borderRadius: "10px",
-                                    border: "2px solid #e74a3b",
-                                    background: "transparent",
-                                    color: "#e74a3b",
-                                    cursor: "pointer",
-                                    fontWeight: "600",
-                                    transition: "all 0.2s"
-                                }}
-                                onMouseEnter={e => {
-                                    e.target.style.background = "#e74a3b";
-                                    e.target.style.color = "#fff";
-                                }}
-                                onMouseLeave={e => {
-                                    e.target.style.background = "transparent";
-                                    e.target.style.color = "#e74a3b";
-                                }}
-                            >
-                                Eliminar
-                            </button>
-                        </div>
-                    </div>
-                ))}
             </main>
-
-            <footer style={{ padding: "1rem", textAlign: "center", background: "#f0f7ee" }}>
-                <small style={{ color: "#2d6a27", fontWeight: "500" }}>
-                    Universidad de Colima © {new Date().getFullYear()}
-                </small>
-            </footer>
-        </>
+        </div>
     );
 }
 

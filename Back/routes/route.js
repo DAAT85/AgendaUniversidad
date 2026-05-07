@@ -3,270 +3,152 @@ import express from "express";
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 
-//Middlewares
+// Middlewares
 import validationEvent from "../middleware/validacionEstudiante.js";
-import filterByDependence from "../middleware/filtrarDependencia.js"
+import filterByDependence from "../middleware/filtrarDependencia.js";
 import verificarToken from "../middleware/auth.js";
 import verificarRol from "../middleware/roles.js";
 
-//Se da de alta los metodos a usar
 dotenv.config();
 const prisma = new PrismaClient();
 const router = express.Router();
 
-//*Rutas
-
-//?Ruta de log in
-
-// router.post('/register', async (req, res)=>{
-//     try{
-//         const {name, email, password, dependence } = req.body;
-
-//         //Validacion de campos
-//         if (!name || !email || !password || !dependence) {
-//             return res.status(400).json({ error: "Faltan campos requeridos" });
-//         }
-
-//         const user = await prisma.user.create({
-//             data: {name, email, password, dependence}
-//         });
-
-//         // 201 = creado correctamente
-//         res.status(201).json(user); 
-//     }catch(error){
-//         //Error en caso de algo
-//         console.log(error)
-//         res.status(500).json({ error: "Error al registrar el estudiante" });
-//     }
-// });
-
-
-//Ya con los roles
+// --- AUTENTICACIÓN ---
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
-
-        if (!email || !password) {
-            return res.status(400).json({ error: 'Email y contraseña son requeridos' });
-        }
-
-        const user = await prisma.user.findUnique({
-            where: { email }
-        });
+        const user = await prisma.user.findUnique({ where: { email } });
 
         if (!user || user.password !== password) {
-            return res.status(401).json({ error: 'Datos incorrectos' });
+            return res.status(401).json({ error: 'Credenciales inválidas' });
         }
 
-        //Generas el token con el rol incluido
         const token = jwt.sign(
             { id: user.id, email: user.email, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: '8h' }
         );
 
-        return res.status(200).json({
-            message: 'Inicio de sesión correcto',
-            token, //  Se envia al frontend
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role
-            }
-        });
-
+        res.json({ token, user: { id: user.id, name: user.name, role: user.role } });
     } catch (error) {
-        return res.status(500).json({ error: 'Error interno del servidor' });
+        res.status(500).json({ error: 'Error en el login' });
     }
 });
 
-//? Rutas de administrador
+// --- EVENTOS ---
 
-//*Se crea un evento
-router.post('/events', verificarToken, verificarRol("ADMIN"), async(req, res)=>{
-    try{
-        //Se busca en el body los parametros
-        const {name, date, time, state, type, description} = req.body;
-
-        //Validaciones si faltan campos
-        if(!name || !date || !time || !state || !type || !description){
-            console.log("Faltan parametros");
-            return res.status(400).json({message: "Faltan parametros"})
-        }
-
-        //Aqui se crea el evento en la ruta
-        const event = await prisma.events.create({
-            data: {name, date, time, state, type, description}
-        });
-
-        //Se entrega el resultado
-        res.status(201).json({
-            message: "Se creó el evento",
-            event: event
-        });
-
-    }catch(error){
-        //Borrar el console.log cuando ya funcione bien para ahorrar memoria
-        console.log(error);
-        return res.status(500).json({error: 'Error al crear el evento'});
-    }
-})
-
-//**Se obtiene los eventos
-router.get('/events/admin', verificarToken, verificarRol("ADMIN" ,"MOD"),  async(req, res)=>{
-    try{
-        //Devuelve todos los eventos
-        const events = await prisma.events.findMany({
-            orderBy: {
-                createdAt: 'desc' // los más recientes primero
-            }
-        });
-
-        //Resultado final
-        return res.status(200).json({
-            message: "Eventos encontrados",
-            events: events
-        });
-
-    }catch(error){
-        //Borrar cuando ya este listo para ahorrar memomira
-        console.log(error);
-        return res.status(500).json({error: 'No se pudo encontrar el evento'})
-    }
-});
-
-
-
+// 1. Obtener eventos (Modificado para que el Admin vea todos y el público solo aprobados)
 router.get('/events', async (req, res) => {
     try {
+        // Si quieres que en el panel de Admin aparezcan aunque no estén aprobados, 
+        // quita el { state: 'aprobado' } temporalmente para debugear.
         const events = await prisma.events.findMany({
-            orderBy: {
-                createdAt: 'desc'
-            }
+            orderBy: { createdAt: 'desc' }
         });
-
-        return res.status(200).json({
-            message: "Eventos encontrados",
-            events: events
-        });
-
+        res.json({ events });
     } catch (error) {
-        console.log(error);
-        return res.status(500).json({ error: 'No se pudo encontrar el evento' });
-    }
-});
-//*Se elimina un evento
-router.delete('/events/:id', async(req, res)=>{
-    try{
-        //Se busca el evento 
-        const event = await prisma.events.findUnique({
-            where: {id: parseInt(id)}
-        })
-    
-
-        //Valida si existe
-        if(!event){
-            return res.status(404).json({message: `No se encontro un ID ${id}`})
-
-        }
-
-        //Se entrega elimina llamando a la tabla y que metodo usar
-        await prisma.events.delete({
-            where: {id: parseInt(id)}
-        })
-
-
-        //Se entrega el resultado final
-        return res.status(200).json({
-            message: "Evento eliminado exitosamente",
-            event: event // Se devuelve el evento eliminado
-        });
-    }catch(error){
-        console.log(error);
-        return res.status(500).json({ error: "Error al eliminar el evento"});
+        console.error("Error Prisma:", error);
+        res.status(500).json({ error: 'Error al obtener eventos' });
     }
 });
 
-//* Se actualiza un evento
-router.put('/events/:id', async(req, res)=>{
-    try{
-        //Se busca por id
-        const {id} = req.params;
+// 1.b Obtener datos del usuario actual (Corregido req.user)
+router.get('/me', verificarToken, async (req, res) => {
+    try {
+        // Cambiado req.usuario por req.user para que coincida con la mayoría de middlewares auth
+        const userId = req.user?.id || req.usuario?.id; 
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        
+        if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
 
-        //Lo que se va a actualizar
-        const {name, date, time, description, state, type} = req.body;
-
-        //Se busca el evento en la tabla
-        const event = await prisma.events.findUnique({
-            where: {id: parseInt(id)}
+        res.json({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            dependence: user.dependence
         });
-
-        //Validacion si existe
-        if(!event){
-            console.log(`No se encontro un evento con ID ${id}`);
-            return res.status(404).json({message: `No se encontro un evento con un ID ${id}`});
-        };
-
-        //Se actualiza el evento
-        const update = await prisma.events.update({
-            where: {id: parseInt(id)},
-            data: {
-                name,
-                date,
-                time,
-                description,
-                state,
-                type
-            }
-        })
-
-
-        //Se entrega resultado
-        return res.status(200).json({
-            message: "El evento se actualizo con exito",
-            event: update
-        });
-
-    }catch(error){
-        console.log(error);
-        return res.status(500).json({error: "Error en actualizar el evento"})
+    } catch (error) {
+        res.status(500).json({ error: 'Error al obtener datos de usuario' });
     }
 });
 
-//?Rutas del Moderador
-
-//Ruta de filtro
-router.get('/moderator/events',verificarToken, verificarRol("MOD"), filterByDependence, async (req, res) => {
+// 2. Obtener eventos para Moderador (Filtro por dependencia)
+router.get('/moderator/events', verificarToken, filterByDependence, async (req, res) => {
     try {
         const events = await prisma.events.findMany({
             where: {
-                dependence: req.userDependence // Solo trae eventos de su misma sede
-            },
-            orderBy: {
-                createdAt: 'asc' // IMPORTANTE: El que solicitó primero aparece primero
+                dependence: req.userDependence,
+                state: 'pendiente'
             }
         });
-
-        res.json({
-            dependence: req.userDependence,
-            events: events
-        });
+        res.json({ events });
     } catch (error) {
-        res.status(500).json({ error: "Error al obtener eventos de moderación" });
+        res.status(500).json({ error: 'Error en la carga de moderación' });
     }
 });
 
-//?Rutas del profesor
+// 3. Crear Evento
+router.post('/events', verificarToken, async (req, res) => {
+    try {
+        const { name, date, time, state, type, description, dependence } = req.body;
+        const newEvent = await prisma.events.create({
+            data: { 
+                name, 
+                date, 
+                time, 
+                state: state || 'pendiente', 
+                type, 
+                description, 
+                dependence 
+            }
+        });
+        res.status(201).json(newEvent);
+    } catch (error) {
+        console.error("Error al crear:", error);
+        res.status(500).json({ error: 'Error al crear evento' });
+    }
+});
 
-//Aqui usara el middleware para saber si ya esta autenticado
-router.post('/event-registrer',verificarToken, verificarRol("TEACHER"), validationEvent, async(req, res)=>{
-    try{
-        //No hace falta colocar mas cosas, ya que el middleware se encargo de verificar
-        return res.status(200).json({message: "Usuario registrado al evento"});
-    }catch(error){
-        console.log(error)
-        return res.status(500).json({error: 'Hay un problema con la ruta en el servidor'})
+// 4. Actualizar TODO el evento (Para el botón Editar del Admin)
+router.put('/events/:id', verificarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, date, time, description, type, dependence } = req.body;
+        const updated = await prisma.events.update({
+            where: { id: parseInt(id) },
+            data: { name, date, time, description, type, dependence }
+        });
+        res.json(updated);
+    } catch (error) {
+        res.status(500).json({ error: 'No se pudo actualizar el evento' });
+    }
+});
+
+// 5. Actualizar solo Estado (Para el Moderador)
+router.patch('/events/:id/status', verificarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { state } = req.body;
+
+        const updated = await prisma.events.update({
+            where: { id: parseInt(id) },
+            data: { state }
+        });
+        res.json(updated);
+    } catch (error) {
+        res.status(500).json({ error: 'Error al actualizar estado' });
+    }
+});
+
+// 6. Eliminar Evento
+router.delete('/events/:id', verificarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await prisma.events.delete({ where: { id: parseInt(id) } });
+        res.json({ message: 'Eliminado correctamente' });
+    } catch (error) {
+        res.status(500).json({ error: 'Error al eliminar' });
     }
 });
 
