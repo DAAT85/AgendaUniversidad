@@ -17,36 +17,38 @@
     align-items: center;
     padding: 20px 30px;
     margin-bottom: 15px;
-    background-color: #B35836;
-    border: 1px solid #94452a;
+    /* Cambio a fondo claro y borde lateral verde como la UdeC */
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-left: 8px solid #B4CF66; 
     border-radius: 16px;
-    box-shadow: 0 4px 15px #53A600(0, 0, 0, 0.15);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     transition: box-shadow 0.3s, transform 0.2s;
-    color: white; 
+    color: #333; 
 }
 
 .evento-item:hover {
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
     transform: translateY(-2px);
 }
 
 .evento-fecha-hora {
-    min-width: 100px;
+    min-width: 120px;
     text-align: center;
     padding-right: 20px;
-    border-right: 1px solid rgba(255, 255, 255, 0.5); 
+    border-right: 1px solid #eee; 
 }
 
 .evento-fecha {
     font-size: 1.2rem;
     font-weight: 700;
-    color: #fafbfb; 
+    color: #5D7331; /* Verde oscuro institucional */
     margin: 0;
 }
 
 .evento-hora {
     font-size: 0.9rem;
-    color: #eee;
+    color: #888;
     margin: 0;
 }
 
@@ -58,34 +60,42 @@
 .evento-nombre {
     font-size: 1.1rem;
     font-weight: 700;
-    color: rgb(6, 66, 6);
+    color: #333;
+    text-transform: uppercase;
     margin: 0 0 5px 0;
 }
 
 .evento-descripcion {
     font-size: 1rem;
-    color: #eee;
+    color: #71824a; /* Tono oliva suave */
+    font-style: italic;
     margin: 0;
 }
 
 .evento-registro {
     min-width: 130px;
+    text-align: right;
 }
 
 .btn-registro {
-    background-color: #53A600; 
+    background-color: #B4CF66; /* Verde claro de la imagen 1 */
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
+    padding: 10px 25px;
+    border-radius: 50px; /* Botón redondeado como el de "Ingresar" */
     cursor: pointer;
     font-weight: bold;
     text-transform: uppercase;
-    transition: background-color 0.2s;
+    font-size: 0.85rem;
+    transition: background-color 0.2s, transform 0.1s;
 }
 
 .btn-registro:hover {
-    background-color: #53A600; 
+    background-color: #9db854; 
+}
+
+.btn-registro:active {
+    transform: scale(0.95);
 }
 
 @media (max-width: 600px) {
@@ -97,7 +107,7 @@
 
     .evento-fecha-hora {
         border-right: none;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+        border-bottom: 1px solid #eee;
         padding-bottom: 10px;
         margin-bottom: 10px;
         width: 100%;
@@ -106,5 +116,13 @@
     
     .evento-info {
         padding: 0 0 15px 0;
+    }
+    
+    .evento-registro {
+        width: 100%;
+    }
+    
+    .btn-registro {
+        width: 100%;
     }
 }

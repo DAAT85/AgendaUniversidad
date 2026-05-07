@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-const API_URL = import.meta.env.VITE_API_URL;
+
 import '../styles/Eventos.css'; 
 
 const handleRegistro = async (nombreEvento) => {  
   try {
-    const response = await fetch(`${API_URL}/api/event-registrer`, {  
+    const response = await fetch(`http://localhost:3000/events`, {  
       method: "POST",
       headers: {
         "Content-Type": "application/json",
