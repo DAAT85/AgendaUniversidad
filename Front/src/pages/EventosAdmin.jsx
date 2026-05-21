@@ -6,6 +6,7 @@ const tipos = ["Conferencia", "Taller", "Curso", "Cultural", "Deportivo", "Otro"
 function EventosAdmin() {
     const [events, setEvents] = useState([]);
     
+    // Carga inicial de escenarios desde LocalStorage
     const [listaEscenarios, setListaEscenarios] = useState(() => {
         const guardados = localStorage.getItem("mis_escenarios");
         return guardados ? JSON.parse(guardados) : [
@@ -15,8 +16,9 @@ function EventosAdmin() {
         ];
     });
 
-    const API_URL = "http://localhost:3000/api/events";
+    const API_URL = "http://localhost:3000/api";
 
+    // Persistencia de escenarios
     useEffect(() => {
         localStorage.setItem("mis_escenarios", JSON.stringify(listaEscenarios));
     }, [listaEscenarios]);
@@ -28,7 +30,7 @@ function EventosAdmin() {
     const fetchEvents = async () => {
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch(API_URL, {
+            const response = await fetch(`${API_URL}/admin/events`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const result = await response.json();
@@ -40,44 +42,82 @@ function EventosAdmin() {
         }
     };
 
-    const gestionarEscenarios = async () => {
-        const { value: action } = await Swal.fire({
+    // --- FUNCIÓN DE GESTIÓN DE ESCENARIOS (Añadir, Editar, Eliminar) ---
+   const gestionarEscenarios = async () => {
+        const { value: opcion } = await Swal.fire({
             title: 'Gestión de Escenarios',
-            showDenyButton: true,
+            text: 'Selecciona una acción para continuar',
+            icon: 'settings', // Opcional: añade un icono de engrane
+            showConfirmButton: false, // Ocultamos el botón de OK estándar
             showCancelButton: true,
-            confirmButtonText: 'Añadir Nuevo',
-            denyButtonText: 'Quitar Existente',
-            confirmButtonColor: "#2d6a27",
-            denyButtonColor: "#e74a3b",
+            cancelButtonText: 'Cerrar',
+            html: `
+                <div style="display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px;">
+                    <button id="btn-add" class="swal2-confirm swal2-styled" style="background-color: #2d6a27; margin: 0;">➕ Añadir Nuevo</button>
+                    <button id="btn-edit" class="swal2-deny swal2-styled" style="background-color: #f6c23e; margin: 0; color: black;">✏️ Editar Nombre</button>
+                    <button id="btn-delete" class="swal2-cancel swal2-styled" style="background-color: #e74a3b; margin: 0;">🗑️ Eliminar Escenario</button>
+                </div>
+            `,
+            didOpen: () => {
+                const content = Swal.getHtmlContainer();
+                
+                content.querySelector('#btn-add').addEventListener('click', () => {
+                    Swal.clickConfirm();
+                    ejecutarAccion('add');
+                });
+                
+                content.querySelector('#btn-edit').addEventListener('click', () => {
+                    Swal.clickDeny(); // Usamos esto para cerrar y disparar la lógica
+                    ejecutarAccion('edit');
+                });
+                
+                content.querySelector('#btn-delete').addEventListener('click', () => {
+                    Swal.close();
+                    ejecutarAccion('delete');
+                });
+            }
         });
 
-        if (action === true) {
-            const { value: nuevoNombre } = await Swal.fire({
-                title: 'Nuevo Escenario',
-                input: 'text',
-                inputPlaceholder: 'Nombre del aula o salón...',
-                showCancelButton: true,
-                inputValidator: (value) => {
-                    if (!value) return '¡Escribe un nombre!';
-                    if (listaEscenarios.includes(value)) return 'Ya existe.';
+        // Función interna para manejar la lógica de cada botón
+        async function ejecutarAccion(tipo) {
+            if (tipo === 'add') {
+                const { value: nuevo } = await Swal.fire({
+                    title: 'Nuevo Escenario',
+                    input: 'text',
+                    inputPlaceholder: 'Nombre del aula...',
+                    showCancelButton: true
+                });
+                if (nuevo) setListaEscenarios(prev => [...prev, nuevo]);
+            }
+
+            if (tipo === 'edit') {
+                const { value: seleccion } = await Swal.fire({
+                    title: 'Seleccionar para editar',
+                    input: 'select',
+                    inputOptions: listaEscenarios.reduce((acc, curr) => ({ ...acc, [curr]: curr }), {}),
+                    showCancelButton: true
+                });
+                if (seleccion) {
+                    const { value: nuevoNombre } = await Swal.fire({
+                        title: 'Nuevo nombre',
+                        input: 'text',
+                        inputValue: seleccion,
+                        showCancelButton: true
+                    });
+                    if (nuevoNombre) setListaEscenarios(prev => prev.map(e => e === seleccion ? nuevoNombre : e));
                 }
-            });
-            if (nuevoNombre) setListaEscenarios(prev => [...prev, nuevoNombre]);
+            }
 
-        } else if (action === false) {
-            const { value: escenarioAEliminar } = await Swal.fire({
-                title: 'Selecciona el escenario a eliminar',
-                input: 'select',
-                inputOptions: listaEscenarios.reduce((acc, curr) => ({ ...acc, [curr]: curr }), {}),
-                inputPlaceholder: 'Selecciona uno',
-                showCancelButton: true,
-                confirmButtonColor: "#e74a3b",
-                confirmButtonText: 'Eliminar definitivamente'
-            });
-
-            if (escenarioAEliminar) {
-                setListaEscenarios(prev => prev.filter(e => e !== escenarioAEliminar));
-                Swal.fire('Eliminado', 'El escenario ha sido quitado de la lista.', 'success');
+            if (tipo === 'delete') {
+                const { value: aEliminar } = await Swal.fire({
+                    title: 'Eliminar escenario',
+                    input: 'select',
+                    inputOptions: listaEscenarios.reduce((acc, curr) => ({ ...acc, [curr]: curr }), {}),
+                    showCancelButton: true,
+                    confirmButtonColor: '#e74a3b',
+                    confirmButtonText: 'Eliminar'
+                });
+                if (aEliminar) setListaEscenarios(prev => prev.filter(e => e !== aEliminar));
             }
         }
     };
@@ -137,7 +177,7 @@ function EventosAdmin() {
             if (result.isConfirmed) {
                 const token = localStorage.getItem("token");
                 const method = event ? "PUT" : "POST";
-                const url = event ? `${API_URL}/${event.id}` : API_URL;
+                const url = event ? `${API_URL}/events/${event.id}` : `${API_URL}/events`;
 
                 try {
                     const response = await fetch(url, {
@@ -178,7 +218,7 @@ function EventosAdmin() {
             if (result.isConfirmed) {
                 try {
                     const token = localStorage.getItem("token");
-                    const response = await fetch(`${API_URL}/${id}`, {
+                    const response = await fetch(`${API_URL}/events/${id}`, {
                         method: "DELETE",
                         headers: { "Authorization": `Bearer ${token}` }
                     });
@@ -193,24 +233,23 @@ function EventosAdmin() {
         });
     };
 
-    // --- ESTILOS DINÁMICOS PARA ANIMACIONES ---
+    // Estilos de botones
     const btnEditStyle = {
         flex: 1, padding: "10px", borderRadius: "10px", 
         border: "2px solid #2d6a27", background: "transparent", 
         color: "#2d6a27", cursor: "pointer", fontWeight: "bold",
-        transition: "all 0.3s ease" // Animación suave
+        transition: "all 0.3s ease"
     };
 
     const btnDeleteStyle = {
         flex: 1, padding: "10px", borderRadius: "10px", 
         border: "2px solid #e74a3b", background: "transparent", 
         color: "#e74a3b", cursor: "pointer", fontWeight: "bold",
-        transition: "all 0.3s ease" // Animación suave
+        transition: "all 0.3s ease"
     };
 
     return (
         <div style={{ background: "#f0f7ee", minHeight: "100vh" }}>
-            {/* CSS INJECTED PARA HOVER EFFECTS */}
             <style>
                 {`
                 .btn-edit:hover {

@@ -4,67 +4,22 @@ import '../styles/Eventos.css';
 
 const API_URL = "http://localhost:3000"; 
 
-const handleRegistro = async (nombreEvento) => {  
-  try {
-    const response = await fetch(`${API_URL}/api/events`, {  
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("token")}` 
-      },
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      Swal.fire({
-        title: '¡Registro Exitoso!',
-        html: `Te has registrado con éxito al evento:<br><b>${nombreEvento}</b>.`,
-        icon: 'success',
-        confirmButtonColor: '#1E8449',
-        timer: 3000,
-        timerProgressBar: true,
-      });
-    } else {
-      Swal.fire({
-        title: 'Acceso Denegado',
-        text: data.error || 'Inicia sesión para registrarte.',
-        icon: 'error',
-        confirmButtonColor: '#E74C3C',
-      });
-    }
-  } catch (error) {
-    Swal.fire({
-      title: 'Error',
-      text: 'No se pudo conectar con el servidor.',
-      icon: 'error',
-    });
-  }
-};
-
-function ContenedorEvento({ id, fecha, nombre, descripcion, hora }) {
-  const fechaISO = fecha ? fecha.split('/').reverse().join('-') : "";
-
+// Agregamos la prop "lugar"
+function ContenedorEvento({ id, fecha, nombre, descripcion, hora, lugar }) {
   return (
-    <article className="evento-item" aria-labelledby={`evento-${id}`}>
+    <article className="evento-item">
       <header className="evento-fecha-hora">
-        <time dateTime={fechaISO} className="evento-fecha">{fecha}</time>
+        <time className="evento-fecha">{fecha}</time>
         <span className="evento-hora">{hora}</span>
       </header>
-      
       <div className="evento-info">
-        <h2 id={`evento-${id}`} className="evento-nombre">{nombre}</h2>
+        <h2 className="evento-nombre">{nombre}</h2>
+        {/* Mostramos el lugar con un estilo distintivo */}
+        <p className="evento-lugar"><strong>Lugar:</strong> {lugar || "Sede Universitaria"}</p>
         <p className="evento-descripcion">{descripcion}</p>
       </div>
-      
       <div className="evento-registro">
-        <button 
-          className="btn-registro"
-          onClick={() => handleRegistro(nombre)}
-          aria-label={`Registrarse en el evento: ${nombre}`}
-        >
-          Registrarse
-        </button>
+        <button className="btn-registro">Registrarse</button>
       </div>
     </article>
   );
@@ -79,68 +34,50 @@ function ListaEventos() {
       try {        
         const token = localStorage.getItem("token");
         const response = await fetch(`${API_URL}/api/events`, {
-          headers: {
-            'Authorization': `Bearer ${token}` 
-          }
+          headers: { 'Authorization': `Bearer ${token}` }
         });
-
-        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
         const result = await response.json();
         const rawData = result.events ?? result.data ?? result;
         
-        // --- CAMBIO CLAVE AQUÍ ---
-        // Filtramos para que SOLO se muestren los aprobados.
-        // Si el estado es 'rechazado' o 'pendiente', se excluye de la lista.
         if (Array.isArray(rawData)) {
-          const soloAprobados = rawData.filter(ev => ev.state === 'aprobado');
+          const soloAprobados = rawData.filter(ev => {
+            const statusLimpio = (ev.state || "").toLowerCase().trim();
+            return statusLimpio === 'aprobado';
+          });
           setEvents(soloAprobados);
-        } else {
-          setEvents([]);
         }
-        // -------------------------
-
       } catch (error) {
-        console.error("Error al cargar eventos:", error);
-        Swal.fire({ 
-            icon: "error", 
-            title: "Error", 
-            text: "No se pudieron sincronizar los eventos" 
-        });
+        console.error("Error:", error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchEvents();
   }, []);
 
-  if (loading) return (
-    <div style={{ textAlign: 'center', padding: '3rem' }}>
-        <p>Cargando eventos disponibles...</p>
-    </div>
-  );
+  if (loading) return <div className="p-5 text-center">Cargando eventos...</div>;
 
   return (
-    <div className="contenedor-pagina">
+    <div className="contenedor-pagina" style={{ padding: "2rem" }}>
+      <h1 className="text-center mb-4" style={{ color: "#2d6a27" }}>Cartelera Universitaria</h1>
       <div className="lista-eventos-container">
-        {events.length === 0 
-          ? (
-            <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <p>No hay eventos disponibles por el momento.</p>
-            </div>
-          )
-          : events.map(evento => (
-              <ContenedorEvento
-                key={evento.id}
-                id={evento.id}
-                fecha={evento.date}
-                hora={evento.time}
-                nombre={evento.name}
-                descripcion={evento.description}
-              />
-            ))
-        }
+        {events.length === 0 ? (
+          <p className="text-center w-100">No hay eventos aprobados en este momento.</p>
+        ) : (
+          events.map(evento => (
+            <ContenedorEvento
+              key={evento.id}
+              id={evento.id}
+              fecha={evento.date}
+              hora={evento.time}
+              nombre={evento.name}
+              descripcion={evento.description}
+              // Pasamos la propiedad del lugar (ajusta 'place' según tu API)
+              lugar={evento.place || evento.location} 
+            />
+          ))
+        )}
       </div>
     </div>
   );

@@ -126,3 +126,9 @@
         width: 100%;
     }
 }
+.evento-lugar {
+  color: #1e8449; /* Un tono verde similar al de la UdeC */
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}

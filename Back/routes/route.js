@@ -3,7 +3,6 @@ import express from "express";
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 
-// Middlewares
 import validationEvent from "../middleware/validacionEstudiante.js";
 import filterByDependence from "../middleware/filtrarDependencia.js";
 import verificarToken from "../middleware/auth.js";
@@ -37,11 +36,23 @@ router.post('/login', async (req, res) => {
 
 // --- EVENTOS ---
 
-// 1. Obtener eventos (Modificado para que el Admin vea todos y el público solo aprobados)
+// 1. Obtener eventos públicos (SOLO aprobados - para ListaEventos)
 router.get('/events', async (req, res) => {
     try {
-        // Si quieres que en el panel de Admin aparezcan aunque no estén aprobados, 
-        // quita el { state: 'aprobado' } temporalmente para debugear.
+        const events = await prisma.events.findMany({
+            where: { state: 'aprobado' },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json({ events });
+    } catch (error) {
+        console.error("Error Prisma:", error);
+        res.status(500).json({ error: 'Error al obtener eventos' });
+    }
+});
+
+// 1.a Obtener TODOS los eventos (para panel Admin - sin filtro de estado)
+router.get('/admin/events', verificarToken, async (req, res) => {
+    try {
         const events = await prisma.events.findMany({
             orderBy: { createdAt: 'desc' }
         });
@@ -52,13 +63,12 @@ router.get('/events', async (req, res) => {
     }
 });
 
-// 1.b Obtener datos del usuario actual (Corregido req.user)
+// 1.b Obtener datos del usuario actual
 router.get('/me', verificarToken, async (req, res) => {
     try {
-        // Cambiado req.usuario por req.user para que coincida con la mayoría de middlewares auth
-        const userId = req.user?.id || req.usuario?.id; 
+        const userId = req.user?.id || req.usuario?.id;
         const user = await prisma.user.findUnique({ where: { id: userId } });
-        
+
         if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
 
         res.json({
@@ -73,7 +83,7 @@ router.get('/me', verificarToken, async (req, res) => {
     }
 });
 
-// 2. Obtener eventos para Moderador (Filtro por dependencia)
+// 2. Obtener eventos para Moderador (filtro por dependencia, solo pendientes)
 router.get('/moderator/events', verificarToken, filterByDependence, async (req, res) => {
     try {
         const events = await prisma.events.findMany({
@@ -93,14 +103,14 @@ router.post('/events', verificarToken, async (req, res) => {
     try {
         const { name, date, time, state, type, description, dependence } = req.body;
         const newEvent = await prisma.events.create({
-            data: { 
-                name, 
-                date, 
-                time, 
-                state: state || 'pendiente', 
-                type, 
-                description, 
-                dependence 
+            data: {
+                name,
+                date,
+                time,
+                state: state || 'aprobado',
+                type,
+                description,
+                dependence
             }
         });
         res.status(201).json(newEvent);
@@ -110,7 +120,7 @@ router.post('/events', verificarToken, async (req, res) => {
     }
 });
 
-// 4. Actualizar TODO el evento (Para el botón Editar del Admin)
+// 4. Actualizar TODO el evento (para el botón Editar del Admin)
 router.put('/events/:id', verificarToken, async (req, res) => {
     try {
         const { id } = req.params;
@@ -125,7 +135,7 @@ router.put('/events/:id', verificarToken, async (req, res) => {
     }
 });
 
-// 5. Actualizar solo Estado (Para el Moderador)
+// 5. Actualizar solo Estado (para el Moderador)
 router.patch('/events/:id/status', verificarToken, async (req, res) => {
     try {
         const { id } = req.params;

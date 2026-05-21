@@ -6,87 +6,39 @@ const API_URL = "http://localhost:3000/api";
 function ModeracionAdmin() {
     const [eventos, setEventos] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [currentUser, setCurrentUser] = useState({
-        nombre: "",
-        rol: "",
-        sedeAsignada: ""
-    });
-    const [errorMessage, setErrorMessage] = useState('');
+    const [currentUser, setCurrentUser] = useState({ nombre: "", rol: "", sedeAsignada: "" });
 
-    // Obtener eventos pendientes para el moderador
     const fetchModeratorEvents = useCallback(async () => {
         try {
             const token = localStorage.getItem("token");
             const response = await fetch(`${API_URL}/moderator/events`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
+                headers: { 'Authorization': `Bearer ${token}` }
             });
-
-            if (response.status === 403) {
-                setErrorMessage("No tienes permisos de moderador.");
-                setEventos([]);
-                return;
-            }
-
             const data = await response.json();
-            // Filtramos por si acaso el backend enviara algo que no sea 'pendiente'
+            // Solo cargamos los pendientes para moderar
             const pendientes = (data.events || []).filter(ev => ev.state === 'pendiente');
             setEventos(pendientes);
-            setErrorMessage('');
         } catch (error) {
-            setErrorMessage('Error al cargar la moderación');
+            console.error('Error:', error);
         } finally {
             setLoading(false);
         }
     }, []);
 
-    const fetchCurrentUser = useCallback(async () => {
-        try {
-            const token = localStorage.getItem("token");
-            const response = await fetch(`${API_URL}/me`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setCurrentUser({
-                    nombre: data.name,
-                    rol: data.role,
-                    sedeAsignada: data.dependence
-                });
-            }
-        } catch (error) {
-            console.error('Error user:', error);
-        }
-    }, []);
-
     useEffect(() => {
-        fetchCurrentUser();
+        const fetchUser = async () => {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${API_URL}/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) {
+                const data = await res.json();
+                setCurrentUser({ nombre: data.name, rol: data.role, sedeAsignada: data.dependence });
+            }
+        };
+        fetchUser();
         fetchModeratorEvents();
-    }, [fetchCurrentUser, fetchModeratorEvents]);
+    }, [fetchModeratorEvents]);
 
-    // ESTA ES LA FUNCIÓN CLAVE CORREGIDA
     const handleDecision = async (id, nuevoEstado) => {
-        const accion = nuevoEstado === 'aprobado' ? 'Aprobar' : 'Rechazar';
-        
-        // Confirmación antes de proceder
-        const confirm = await Swal.fire({
-            title: `¿${accion} evento?`,
-            text: `Vas a marcar este evento como ${nuevoEstado}`,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: nuevoEstado === 'aprobado' ? '#2d6a27' : '#d33',
-            confirmButtonText: `Sí, ${nuevoEstado}`
-        });
-
-        if (!confirm.isConfirmed) return;
-
         try {
             const token = localStorage.getItem("token");
             const response = await fetch(`${API_URL}/events/${id}/status`, {
@@ -98,110 +50,74 @@ function ModeracionAdmin() {
                 body: JSON.stringify({ state: nuevoEstado })
             });
 
-            if (!response.ok) throw new Error("Error al actualizar");
-
-            // ELIMINAR DE LA LISTA: Independientemente de si es aprobado o rechazado,
-            // ya no es una "solicitud pendiente", por lo que se quita del estado local.
-            setEventos(prev => prev.filter(ev => ev.id !== id));
-
-            Swal.fire({
-                icon: 'success',
-                title: nuevoEstado === 'aprobado' ? 'Evento Aprobado' : 'Evento Rechazado',
-                text: `El evento ha sido ${nuevoEstado} y quitado de tu lista.`,
-                timer: 2000,
-                showConfirmButton: false
-            });
+            if (response.ok) {
+                // Eliminamos de la lista visual inmediatamente
+                setEventos(prev => prev.filter(ev => ev.id !== id));
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: `Evento ${nuevoEstado}`,
+                    text: nuevoEstado === 'aprobado' ? 'Ahora es visible para todos.' : 'Ha sido descartado.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
         } catch (error) {
-            Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
+            Swal.fire('Error', 'No se pudo actualizar', 'error');
         }
     };
 
     const createTestEvent = async () => {
-        try {
-            const token = localStorage.getItem("token");
-            await fetch(`${API_URL}/events`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    name: 'Evento de Prueba Moderación',
-                    date: '2026-06-15',
-                    time: '12:00',
-                    state: 'pendiente',
-                    type: 'Taller',
-                    description: 'Prueba de flujo de moderador.',
-                    dependence: currentUser.sedeAsignada
-                })
-            });
-            fetchModeratorEvents();
-        } catch (e) { console.log(e); }
+        const token = localStorage.getItem("token");
+        await fetch(`${API_URL}/events`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({
+                name: 'Prueba de Filtro',
+                date: '2026-10-10',
+                time: '10:00',
+                state: 'pendiente',
+                type: 'Prueba',
+                description: 'Si lo rechazas, debe desaparecer de la principal.',
+                dependence: currentUser.sedeAsignada || "General"
+            })
+        });
+        fetchModeratorEvents();
     };
 
-    if (loading) return <div className="p-5 text-center">Cargando solicitudes...</div>;
+    if (loading) return <div className="p-5 text-center">Cargando...</div>;
 
     return (
         <div style={{ padding: "2rem", background: "#f8f9fa", minHeight: "100vh" }}>
-            <div className="alert shadow-sm" style={{ background: "#fff", borderLeft: "5px solid #2d6a27" }}>
-                <strong>Moderador:</strong> {currentUser.nombre} | <strong>Sede:</strong> {currentUser.sedeAsignada}
-            </div>
-
-            <div className="d-flex align-items-center justify-content-between mb-4">
-                <div>
-                    <h2 style={{ color: "#2d6a27", fontWeight: "700" }}>Panel de Moderación</h2>
-                    <p className="text-muted">Gestiona las solicitudes de tu dependencia.</p>
-                </div>
-                <button className="btn btn-success shadow-sm" onClick={createTestEvent}>
-                    + Crear Prueba
-                </button>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h2 style={{ color: "#2d6a27" }}>Panel de Moderación</h2>
+                <button className="btn btn-dark shadow-sm" onClick={createTestEvent}>+ Crear Prueba Pendiente</button>
             </div>
 
             <div className="card shadow-sm border-0">
-                <div className="table-responsive">
-                    <table className="table table-hover mb-0">
-                        <thead style={{ background: "#2d6a27", color: "#fff" }}>
-                            <tr>
-                                <th>Evento</th>
-                                <th>Fecha</th>
-                                <th>Hora</th>
-                                <th className="text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {eventos.length === 0 ? (
-                                <tr><td colSpan="4" className="text-center py-4 text-muted">No hay solicitudes pendientes por ahora.</td></tr>
-                            ) : (
-                                eventos.map((ev) => (
-                                    <tr key={ev.id}>
-                                        <td>
-                                            <div className="fw-bold">{ev.name}</div>
-                                            <small className="text-muted">{ev.type}</small>
-                                        </td>
-                                        <td>{ev.date}</td>
-                                        <td>{ev.time} h</td>
-                                        <td className="text-center">
-                                            <div className="btn-group">
-                                                <button 
-                                                    className="btn btn-outline-success btn-sm" 
-                                                    onClick={() => handleDecision(ev.id, 'aprobado')}
-                                                >
-                                                    Aprobar
-                                                </button>
-                                                <button 
-                                                    className="btn btn-outline-danger btn-sm" 
-                                                    onClick={() => handleDecision(ev.id, 'rechazado')}
-                                                >
-                                                    Rechazar
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                <table className="table table-hover mb-0">
+                    <thead style={{ background: "#2d6a27", color: "#fff" }}>
+                        <tr>
+                            <th>Evento</th>
+                            <th className="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {eventos.length === 0 ? (
+                            <tr><td colSpan="2" className="text-center py-4">No hay nada pendiente.</td></tr>
+                        ) : (
+                            eventos.map(ev => (
+                                <tr key={ev.id}>
+                                    <td><strong>{ev.name}</strong><br/><small>{ev.date} - {ev.time}</small></td>
+                                    <td className="text-center">
+                                        <button className="btn btn-success btn-sm me-2" onClick={() => handleDecision(ev.id, 'aprobado')}>Aprobar</button>
+                                        <button className="btn btn-danger btn-sm" onClick={() => handleDecision(ev.id, 'rechazado')}>Rechazar</button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
             </div>
         </div>
     );
